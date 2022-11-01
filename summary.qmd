@@ -1,0 +1,17 @@
+# Summary
+
+
+## `snakemake` has lots of useful qualities
+
+We've seen how to build `snakemake` pipelines that can handle multiple steps and experimental variables and how to scale it to a cluster or a scattered filesystem. We've also seen how `snakemake` can increase reproducibility and save operator time massively
+
+
+## But being 'general' over lots of pipelines isn't one of them
+
+Perhaps at this stage you'd be expecting to see something like 'how to generalise `snakemake`' and re-use it over and over in different projects. 
+That's not really something `snakemake` is for. As its really tied to a filesystem then its often a bit fiddly to get to generalise. Instead, take advantage of the fact that `snakemake` is really good at re-doing stuff. Make as many files as you can temporary with `temp()` and remove final results. The resulting 'shell' of the pipeline could be versioned - perhaps in git - but maybe with something as simple as a datestamp on the project folder. That way you won't lose that iteration of the pipeline, and it can be re-run exactly should you need to back track.
+
+## It is worth the effort
+
+Hopefully this quick intro hasn't made you think that all this is too much effort. I like to think of tools like `snakemake` as being things that put you back in charge of the computer. A computer is supposed to be a machine to make your life easier. When we get into a situation where all our work in a task is repetitive then we've missed a chance to do that. The learning curve of `snakemake` is no greater than that you took to learn your first bash script so take the leap and put yourself back in charge.
+

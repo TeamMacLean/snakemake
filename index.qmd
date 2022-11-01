@@ -1,0 +1,24 @@
+# Preface {.unnumbered}
+
+## Motivation 
+
+Do you ever feel like the large pipeline or large number of steps in your bioinformatic analysis is a pressure? That somehow it is in charge and you are just there to sit and tell the computer what to do, over and over? Do you fear having missed a step or mis-specified a file and lose sleep from the horror of having to re-do something over again because of a reviewer request? Fear not, these terrors are exactly what `snakemake` is designed to help slay. `snakemake` can help you build robust (in the sense that it can be stopped by an unexpected hiccup and can restart from where it left off once that hiccup is cleared) and reproducible pipelines in a quick and easy fashion.
+
+
+![Pained Scientist](scientist.png){fig-align="center"}
+`snakemake` is one of a number of tools that allows you to chain together multiple processes into a pipeline. These tools are sometimes called workflow managers and they tie processes together by having some model of the dependency structure between the inputs and outputs of the steps of a pipeline. 
+
+Things like `bash` scripts _can_ do this job, but they're bad ways if we want to be reproducible and robust to failure without resorting to heavily engineering scripts to recognise when inputs/outputs change. Dependency based tools like `makefiles` and their derivatives have been around for decades, doing similar jobs but recently more pipeline specific tools like `snakemake`, `Nextflow` `Common Workflow Language` and even the graphical `Galaxy` workflows have appeared specifically for scalable reproducible analysis pipelines. 
+
+`snakemake` is a good choice as it has a lightweight Python based syntax that will be familiar to many users.
+
+In this short tutorial we'll look at how to create `snakemake` pipelines for use on a `slurm` cluster like the one in use at TSL. 
+
+
+## Setup and Prerequisites
+
+This tutorial presumes you are at least a little familiar with bash scripts and Python (but not much) and that you have experience submitting and running jobs on a `slurm` cluster.
+
+To replicate the examples, you'll need the data here [sample_data.zip](sample_data.zip) and the programs, `minimap2`, `samtools` and `snakemake` which you can install from [conda](https://docs.conda.io/projects/conda/en/latest/) and [bioconda](https://bioconda.github.io/).
+
+If you need any help with this please see the bioinformatics team.

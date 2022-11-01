@@ -1,0 +1,12 @@
+# A Checkout Challenge
+
+If you're looking for a task to do in `snakemake` why not try this experiment on the TSL cluster.
+
+
+On TSL's sequence database we have [this](https://sequences.tsl.ac.uk/project?id=6177bbae3545d74de71ebb85) _Arabidopsis_ project. It contains six samples and two run files per sample. Write a `snakemake` pipeline to
+
+  1. QC the reads with e.g `fastqc`
+  2. Find SNPs with e.g `vcftools`
+  3. Estimate read counts/TPM with e.g `kallisto`
+
+Happy `snakemake`-ing.

@@ -1,0 +1,270 @@
+# Working on a `slurm` cluster
+
+In this section we'll look at how to adapt your snakefile to run well across many nodes of a cluster. We'll look at
+
+  1. The `params` object
+  2. The command-line options for `snakemake` on the cluster
+  3. Custom functions for filenames
+
+
+## How `snakemake` expects to run on a `slurm` cluster
+
+Briefly, `snakemake` expects each job to run individually on different machines on the cluster under the management of one core job that runs for the duration of the pipeline. That means that each job can have its own parameters and jobs will dispatch more quickly if they get the correct parameters for their needs. We will learn how to set the jobs parameters through the `params` object in the rule.
+
+
+`params` is a rule attribute, like `input` and `output` that can take parameters to be passed through to the `shell` command run by that rule. It also can be referenced in the command-line invocation of snakemake. This makes it perfect for setting extra job options. Lets look at three examples of use, first just passing an option to a command
+
+## `params`
+
+### Keeping the rule clean 
+
+This is mostly a way to be explicit and make params easy to see and rules clean.  Use the new params block like the wildcards
+
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: my_function(wildcards, "fq1")
+    fq2=lambda wildcards: my_function(wildcards, "fq2")
+    ref=config['databases'] + "{sample}_genome.fa"
+  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+  params:
+    quality=25,
+    flags=3
+  shell:"""
+minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
+samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+"""
+```
+
+### Dynamic parameter setting
+
+We can use `lambda` functions to generate values for parameters if we need to based on the values of wildcards, here we guess the memory needed for a job
+
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: my_function(wildcards, "fq1")
+    fq2=lambda wildcards: my_function(wildcards, "fq2")
+    ref=config['databases'] + "{sample}_genome.fa"
+  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+  params:
+    mem=lambda: wildcards: guess_parameter(wildcards)
+    quality=25,
+    flags=3
+  shell:"""
+minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
+samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+"""
+```
+
+Note how we don't use this in the actual shell block. What's going on there? This links us to our third use, using the `params` info to set `slurm` options for this job. 
+
+### Using `params` to set `slurm` job options
+
+The `snakemake` command has an option called `--cluster` that specifies a template for the submission for each job. It takes a string that will resolve wildcards and pass them as options for `slurm`. Look at this
+
+```
+snakemake --snakefile my.snakefile --cluster 'sbatch --mem={params.mem}'
+```
+
+The `--cluster` option is hijacked for each job and values from the snakefile pushed in when the job is submitted.  In practice this means that each job will get its own specific value of `mem` from its `params` block, allowing us to specify the value as needed. 
+
+We can specify more options arbitrarily. The following allows us to specify the queue as well and for some reason the number of cores (threads), has its own argument, giving us a rule like this ready for the cluster.
+
+
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: my_function(wildcards, "fq1")
+    fq2=lambda wildcards: my_function(wildcards, "fq2")
+    ref=config['databases'] + "{sample}_genome.fa"
+  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+  threads: 8
+  params:
+    mem="32G",
+    queue="tsl-short",
+    quality=25,
+    flags=3
+  shell:"""
+minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
+samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+"""
+
+```
+
+Which we would add into the command line as
+
+```
+snakemake --snakefile my.snakefile --cluster 'sbatch --mem={params.mem} --partition={params.queue} -c {threads}'
+```
+
+## `source`
+
+On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like `source` and `singularity` images have to be loaded in each job and not globally. They wont work if you put them in the command line, instead they have to go in the `shell` block (or script) like this
+
+```{python}
+#| eval: false
+  shell:"""
+source minimap2-2.5
+source samtools-1.9
+minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
+samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+"""
+```
+
+
+## Using a file-of-files as a database for mapping wildcards to filesystem paths
+
+Often we will want to use filenames that have no indication of our sample name or other wildcards in them. This might be because they are raw datafiles from sequencing providers and we don't want to change the filenames or copy the large files across the filesystem from a central storage. Because we are able to use `lambda` functions in `snakemake` and any old Python we can make a database of mappings between the wildcard names and other things like filepaths in a csv file, and read it in for use at any time we like.
+
+Consider the following sample file (name `sample_info.csv`)
+
+```
+sample, fq1_path, fq2_path, treatment, time
+pputida, /my/seq/db/pputida_1.fq, /my/seq/db/pputida_2.fq, test, 0h
+ecoli, /my/seq/db/ecoli_mega_R1.fastq.gz, /my/seq/db/ecol_mega_R2_fastq.gz, control, 6h
+...
+```
+
+Note that the file names don't have a common pattern, so won't easily be resolved by `snakemake` wildcards. Instead we can build lists of the columns by parsing the file in a usual Python way at the top of the `snakemake` file
+
+
+```{python}
+#| eval: false
+samples = []
+fq1 = []
+fq2 = []
+times = []
+treatments = []
+with open("sample_info.csv") as csv:
+    for l in csv:
+        l = l.rstrip("\n")
+        if not l.startswith("sample"):
+            els = l.split(",")
+            samples.append( els[0] )
+            fq1.append( els[1] )
+            fq2.append( els[2] )
+            times.append( els[3] )
+            treatments.append( els[4])
+```
+
+We can generate functions that given a `sample` will return the other items e.g `fq`
+
+```{python}
+#| eval: false
+def sample_to_read(sample, samples, fq):
+'''given a sample and list of samples and a list of fqs returns the fq with the same index
+as the sample'''
+    return fq[samples.index(sample)]
+```
+
+So now we can use the wildcard to get back the fq file in the `lambda` function in the rule like this
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: sample_to_read(wildcards.sample, samples, fq1)
+    fq2=lambda wildcards: saample_to_read(wildcards.sample, samples, fq2)
+
+```
+
+Which returns the full filesytem path for each fq based on the `sample` wildcard.
+
+This is a really useful feature, but it can be tempting to think of it as a solution to everything. Try to use it only for files that come _into_ the `snakemake` pipeline at the beginning and not for things that are generated internally or for final outputs.
+
+## Setting the log file and naming the job
+
+It is a good idea to explicitly set the log filename. Otherwise the run log info will go to a generically named slurm output file. This is a problem because every job run on the HPC under `snakemake` generates a slurm output file which is generically named and the main one can get lost. Similarly, the output from the slurm `squeue` command can get busy with many jobs, so it can also be a good idea to set the main job's name. Logfile can be set with the `sbatch` option `-o` and name with `-J` e.g
+
+```
+sbatch -J my_jobs -o my_jobs.log ...
+```
+
+## Assigning the maximum number of parallel jobs
+
+You can limit the number of jobs that will run concurrently with `-j`. `snakemake` will not allow more than the specified number of jobs into the queue at any one time. It will manage the submission of jobs right until the completion of the pipeline whatever value you choose. It doesn't create any extra work for you, just throttles `snakemake` should you require it. EG
+
+```
+snakemake --snakefile my_pipeline.snakefile --j 20
+```
+
+## Waiting for the filesystem to catch up
+
+In a HPC environment we sometimes have to wait for processes to finish writing to disk. These operation can be considered complete by the operating system but still need writing or the filesystem fully updated. So if a new process in a pipeline can't find the output its expecting from a finished process becauce the filesystem is behind, the whole thing could fall over. To avoid this we can set a latency time in which the `snakemake` process will wait and keep checking for the file to arrive before crashing out. Ususally 60 seconds is fine. Set it as follows
+
+```
+snakemake --snakefile my_pipeline.snakefile --latency-wait 60
+```
+
+## Unlocking a crashed process
+
+Occasionally the `snakemake` pipeline will crash, often because one of its dependent jobs has failed to complete properly (perhaps it ran out of memory). In this state `snakemake` will become locked, to prevent further corruption of the pipeline. The next step is for you to check the logs to see what went wrong and manually resolve it. Then (and only then) can you unlock the `snakemake` pipeline and restart it. Thankfully, `snakemake` will pick up from where it left off, so no earlier progress will be lost.
+
+You can unlock with the `snakemake` option `--unlock`, e.g
+
+```
+snakemake --snakefile my_pipeline.snakefile --unlock
+```
+
+## Creating a dispatch script
+
+With all these things to remember for the cluster it can be useful to write a master dispatch script to hold the `snakemake` and cluster options. Here's an example one that allows to call it in one of the following three ways
+
+  1. `bash do_snake.sh`
+  2. `bash do_snake.sh dryrun`
+  3. `bash do_snake.sh unlock`
+  
+`1.` Let's you run the pipeline proper, `2.` does the dryrun, `3` will unlock a crashed process.
+
+Here's what that example script looks like
+
+```
+if [ -z "$1" ]
+then
+    sbatch -J my_job \
+    -o my_job.log \
+    --wrap="source snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile my_main_rule --cluster 'sbatch --partition={params.queue} -c {threads} --mem={params.mem}' \ 
+    -j 20 \
+    --latency-wait 60" 
+elif [ $1 = 'unlock' ]
+then
+    sbatch -J unlock \
+        -o my_job.log \
+        --wrap="snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile --unlock" \
+        --partition="tsl-short" \
+        --mem="16G"
+elif [ $1 = "dryrun" ]
+then
+    sbatch -J dryrun \
+    -o my_job.log \
+    --wrap="source snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile -n" \
+    --partition="tsl-short" \
+    --mem="16G"
+fi
+```
+
+Note that `snakemake` will need loading with `source`.
+
+
+## Organising the `snakemake` bits and pieces
+
+If you are going to end up with a pipeline with lots of steps and subscripts and a dispatch script, it can be a good idea to organise into a project structure. Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the `config file` section. Then consider the top level directory as the base for executing everything. Something like this would be good
+
+```
+$ pwd 
+my_pipeline 
+$ tree
+.
+├── README.txt
+├── config.yaml
+├── results
+└── scripts
+    ├── do_pipeline.sh
+    └── my_pipeline.snakemake
+```
+
+so that when you're in the `my_pipeline` directory everything can be run as e.g `bash scripts/do_pipeline.sh dryrun`
+

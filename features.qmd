@@ -1,0 +1,168 @@
+# Useful `snakemake` features
+
+## The `expand()` function
+
+`snakemake` requires a list of files in it's rule inputs. These are just standard Python lists and can be made using functions. A helper function called `expand()` does some wildcard expansion of its own. You can see its use in our `final_alignments` rule here.
+
+```{python}
+#| eval: false
+samples = ['ecoli', 'pputida']
+
+rule final_alignments:
+  input: expand( "{sample}.sorted.bam", sample=samples)
+```
+
+We can create all the input files programatically using a list of names `samples` and using the `expand()` function which just slots each of the values into its proper place to create a list, saving us a lot of definitions on large sample sets. This will work the same if we give it more than one list and wildcard to expand, like this
+
+
+
+```{python}
+#| eval: false
+samples = ['ecoli', 'pputida']
+timepoints = ['0h', '2h']
+treatments = ['test', 'control']
+
+rule final_alignments:
+  input: expand( "{sample}_{time}_{treatment}.sorted.bam", sample=samples, time=timepoints, treatment=treatments)
+```
+
+which will create all the combinations of those lists.
+
+## The `config.yml` file
+
+We won't often have all our files in the current directory, nor want our results and intermediate files to go there, they'll usually be spread about the filesystem. Which means we will have to start dealing with varied paths. Recall that `snakemake` _is_ Python. This means that we can create paths using standard Python string operations like `+`. This is most useful when combined with a `config.yml` file which looks something like this
+
+```
+scratch: "/path/to/a/scratch/folder/"
+databases: "/path/to/a/database/folder/"
+results: "/path/to/a/results/folder"
+```
+
+These paths make up a base set of paths that we may want to write or read from in our rules. When loaded into the snakefile a Python `dict` object called `config` is created that we can access using the keys named in `config.yml`. Here's an example
+
+```{python}
+#| eval: false
+
+samples = ['ecoli', 'pputida']
+timepoints = ['0h', '2h']
+treatments = ['test', 'control']
+
+configfile: "config.yml"
+
+rule final_alignments:
+  input: expand( config['results'] + "{sample}_{time}_{treatment}.sorted.bam", sample=samples, time=timepoints, treatment=treatments)
+    
+rule sort:
+  input: config['scratch'] + "{sample}_{time}_{treatment}_aln.bam"
+  output: config['results'] + "{sample}_{time}_{treatment}.sorted.bam"
+  shell: "samtools sort {input} -o {output}"
+
+rule align_and_bam:
+  input:
+    fq1="{sample}_{time}_{treatment}_left_R1.fq",
+    fq2="{sample}_{time}_{treatment}_right_R2.fq",
+    ref=config['databases'] + "{sample}_genome.fa"
+  output: config['scratch'] + "{sample}_{time}_{treatment}_aln.bam"
+  shell: "minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | samtools view -S -h -b -q 25 -f 3 > {output}"
+
+```
+
+It should be easy to see how to load the config file and inject the values into our paths nicely. 
+
+
+## `lambda` functions
+
+In the `config` example above it may have been conspicuous that the fastq files were not graced with the information from the config file. This gives us opportunity to explore how to use the wildcard information to get a path using custom functions. For input files, `snakemake` allows us to use a Python `lambda` function. These are one line functions that don't get a name. You can pass them the `wildcards` object and get them to call a second function that uses that information to generate the pathname for the file. Have a look at this snippet
+
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: my_function(wildcards, "fq1")
+    fq2=lambda wildcards: my_function(wildcards, "fq2")
+
+```
+
+The function `my_function()` _must_ return a single pathname as a string, as it is _just_ Python the function can be defined in the top of the `snakemake` file or imported.  We'll look at these in more depth later. 
+
+## Rerunning a specific step
+
+If we really want to micro-manage our pipeline we can run individual steps at will. We have up to now been running the whole thing from the final rule. But any rule can be taken as the end point. Just use its name in the invocation,
+
+```
+snakemake <any rule> --snakefile my.snakefile
+```
+
+## Deleting intermediate files
+
+Quite often there's no need to keep anything but the final result file(s). Since we can regenerate intermediate files easily using its rule in the   `snakefile` we can usually just tell `snakemake` to remove output files when they're no longer needed by wrapping the path in the `temp()` function, like this
+
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: my_function(wildcards, "fq1")
+    fq2=lambda wildcards: my_function(wildcards, "fq2")
+    ref=config['databases'] + "{sample}_genome.fa"
+  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+  shell: "minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | samtools view -S -h -b -q 25 -f 3 > {output}"
+```
+
+This saves as lot of space during runtime for big pipelines _and_ saves a lot of clean up. 
+
+## More `shell`
+
+In all our examples we've used a `shell` line to hold the command. We can make the `shell` command multi-line by wrapping it in Python triple quotes, enabling us to have longer commands/chains in the snakefile
+
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: my_function(wildcards, "fq1")
+    fq2=lambda wildcards: my_function(wildcards, "fq2")
+    ref=config['databases'] + "{sample}_genome.fa"
+  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+  shell:"""
+minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
+samtools view -S -h -b -q 25 -f 3 > {output}
+"""
+```
+
+A common alternative that prevents the snakefile from getting gummed up with job specifics is just to put the commands in a bash script and call that. Any script that can be run on the command line can be run this way, including Python, R etc
+
+```{python}
+#| eval: false
+rule align_and_bam:
+  input:
+    fq1=lambda wildcards: my_function(wildcards, "fq1")
+    fq2=lambda wildcards: my_function(wildcards, "fq2")
+    ref=config['databases'] + "{sample}_genome.fa"
+  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+  shell:"bash scripts/do_alignments.sh {input.ref} {input.fq1} {input.fq2}"
+```
+
+The `shell:` can also be replaced with `run:` which allows you to use Python directly in the snakefile.
+
+
+## Drawing the pipeline
+
+It is possible to get `snakemake` to generate a picture of your pipeline, which is great for understanding when things get complicated or showing your boss how involved these things are. We use the `--dag` option in conjunction with `graphviz` (which will need installing separately). Here's the magic spell
+
+```
+snakemake --snakefile my.snakefile --dag | dot -Tpng -Gsize=9,15\! -Gdpi=100 > pipeline.png
+
+```
+
+If you don't want the whole set of files in there, and just want to see the 'core' rules then you can use `--rulegraph` instead of `--dag`
+
+```
+snakemake --snakefile my.snakefile --rulegraph | dot -Tpng -Gsize=9,15\! -Gdpi=100 > pipeline.png
+
+```
+
+
+
+## Summary
+
+These are all helpful `snakemake` features that will help your snakefile work more easily in a real setting. Most pipelines you develop will use most of these features. 
+

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Using snakemake to create robust and reproducible bioinformatic pipelines - 1&nbsp; First Look</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./features.html" rel="next">
+<link href="./index.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">First Look</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Using snakemake to create robust and reproducible bioinformatic pipelines</a> 
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">First Look</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./features.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Useful <code>snakemake</code> features</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./cluster.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Working on a <code>slurm</code> cluster</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./summary.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Summary</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./checkout.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">A Checkout Challenge</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#making-a-snakefile" id="toc-making-a-snakefile" class="nav-link active" data-scroll-target="#making-a-snakefile"><span class="toc-section-number">1.1</span>  Making a <code>snakefile</code></a></li>
+  <li><a href="#running-the-pipeline" id="toc-running-the-pipeline" class="nav-link" data-scroll-target="#running-the-pipeline"><span class="toc-section-number">1.2</span>  Running the pipeline</a>
+  <ul class="collapse">
+  <li><a href="#the-dry-run" id="toc-the-dry-run" class="nav-link" data-scroll-target="#the-dry-run"><span class="toc-section-number">1.2.1</span>  The dry-run</a></li>
+  <li><a href="#the-run-proper" id="toc-the-run-proper" class="nav-link" data-scroll-target="#the-run-proper"><span class="toc-section-number">1.2.2</span>  The Run Proper</a></li>
+  </ul></li>
+  <li><a href="#the-first-awesome-thing-about-snakemake" id="toc-the-first-awesome-thing-about-snakemake" class="nav-link" data-scroll-target="#the-first-awesome-thing-about-snakemake"><span class="toc-section-number">1.3</span>  The first awesome thing about <code>snakemake</code></a></li>
+  <li><a href="#the-second-awesome-thing-about-snakemake" id="toc-the-second-awesome-thing-about-snakemake" class="nav-link" data-scroll-target="#the-second-awesome-thing-about-snakemake"><span class="toc-section-number">1.4</span>  The second awesome thing about <code>snakemake</code></a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="toc-section-number">1.5</span>  Summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">First Look</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    
+  </div>
+  
+
+</header>
+
+<p>In this section we’ll look at making and running a first pipeline and understanding why <code>snakemake</code> is better for you than <code>bash</code> scripts.</p>
+<section id="making-a-snakefile" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="making-a-snakefile"><span class="header-section-number">1.1</span> Making a <code>snakefile</code></h2>
+<p><code>snakemake</code> is intended to replace the mess of <code>bash</code> scripts you use to run your workflows. So let’s look at converting a simple <code>bash</code> script to <code>snakemake</code></p>
+<pre><code>minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | \
+samtools view -S -h -b -q 25 -f 3 &gt; aln.bam
+samtools sort aln.bam -o aln.sorted.bam</code></pre>
+<p>The two commands convert into the following <code>snakemake</code> rules</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here are the key points</p>
+<ol type="1">
+<li>A <code>snakemake</code> file is composed of <code>rules</code></li>
+<li>Each rule has (at least) one input file, (at least) one output file and a command for making the output file from the input</li>
+<li>Rules are therefore linked into a chain or tree by the files that go in and come out</li>
+<li>There is an extra final rule that specifies the final result of the pipeline. This rule has no output or command, only inputs</li>
+</ol>
+<p>That is the basis of it!</p>
+</section>
+<section id="running-the-pipeline" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="running-the-pipeline"><span class="header-section-number">1.2</span> Running the pipeline</h2>
+<p>We run the rules by putting them in a file. Usually this is suffixed with <code>.snakefile</code> to give something like <code>my_pipeline.snakefile</code>. When we come to run the pipeline <code>snakemake</code> needs us to tell it the name of the rule to run (recall our base rule is <code>final_alignments</code> ), and the snakefile and the cores the pipeline is allowed to use with the <code>-c flag</code>.</p>
+<section id="the-dry-run" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="the-dry-run"><span class="header-section-number">1.2.1</span> The dry-run</h3>
+<p>Usually we don’t want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake <code>-n</code> flag creates a dry-run. Put together that makes something like</p>
+<pre><code>snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n</code></pre>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Default file and rules
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Actually, <code>snakemake</code> looks for the default file <code>Snakefile</code> and the main rule <code>all</code> so if you use them you can have a command like <code>snakemake -c1 -n</code> which is less verbose but also less explicit.</p>
+</div>
+</div>
+<p>We get a lot of output. It can be broken down into a few bits,</p>
+<ol type="1">
+<li>The Summary</li>
+<li>The Jobs</li>
+<li>The to-be-done list</li>
+</ol>
+<section id="the-summary" class="level4" data-number="1.2.1.1">
+<h4 data-number="1.2.1.1" class="anchored" data-anchor-id="the-summary"><span class="header-section-number">1.2.1.1</span> The Summary</h4>
+<p>At the top of the file we are given a summary of the number of times each rule will be run and the resources specified (here just the defaults)</p>
+<pre><code>Building DAG of jobs...
+Job stats:
+job                 count    min threads    max threads
+----------------  -------  -------------  -------------
+align_and_bam           1              1              1
+final_alignments        1              1              1
+sort                    1              1              1
+total                   3              1              1</code></pre>
+</section>
+<section id="the-jobs" class="level4" data-number="1.2.1.2">
+<h4 data-number="1.2.1.2" class="anchored" data-anchor-id="the-jobs"><span class="header-section-number">1.2.1.2</span> The Jobs</h4>
+<p>Next we get a much more granular view, each job is presented with the expected input and output and a reason why it needs running. Usually this will be either <code>missing output files</code> IE the output hasn’t been created so the job still needs to run or <code>Input files updated by another job</code> meaning that an input file is newer than an output file (or when it is created it will be) so this file needs updating.</p>
+<pre><code>[Wed Oct 26 16:51:18 2022]
+rule align_and_bam:
+    input: ecoli_left_R1.fq, ecoli_right_R2.fq, ecoli_genome.fa
+    output: aln.bam
+    jobid: 2
+    reason: Missing output files: aln.bam
+    resources: tmpdir=/var/folders/22/kjdvv_k14cj1m6hq5hl527qw0006zc/T
+
+
+[Wed Oct 26 16:51:18 2022]
+rule sort:
+    input: aln.bam
+    output: aln.sorted.bam
+    jobid: 1
+    reason: Missing output files: aln.sorted.bam; Input files updated by another job: aln.bam
+    resources: tmpdir=/var/folders/22/kjdvv_k14cj1m6hq5hl527qw0006zc/T
+
+
+[Wed Oct 26 16:51:18 2022]
+localrule final_alignments:
+    input: aln.sorted.bam
+    jobid: 0
+    reason: Input files updated by another job: aln.sorted.bam
+    resources: tmpdir=/var/folders/22/kjdvv_k14cj1m6hq5hl527qw0006zc/T</code></pre>
+</section>
+<section id="the-to-be-done-list" class="level4" data-number="1.2.1.3">
+<h4 data-number="1.2.1.3" class="anchored" data-anchor-id="the-to-be-done-list"><span class="header-section-number">1.2.1.3</span> The to-be-done list</h4>
+<p>This is a version of the summary outlining the bits of the pipeline that need to complete for everything to be in order.</p>
+<pre><code>Job stats:
+job                 count    min threads    max threads
+----------------  -------  -------------  -------------
+align_and_bam           1              1              1
+final_alignments        1              1              1
+sort                    1              1              1
+total                   3              1              1
+
+Reasons:
+    (check individual jobs above for details)
+    input files updated by another job:
+        final_alignments, sort
+    missing output files:
+        align_and_bam, sort
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.</code></pre>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Using a log
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As your list of jobs grows and the output from <code>snakemake</code> becomes large, its best to use a log file. Do that with <code>-o somename.log</code> e.g <code>snakemake --snakefile final_alignments my_pipeline.snakefile -n -o my_pipeline.log</code></p>
+</div>
+</div>
+</section>
+</section>
+<section id="the-run-proper" class="level3" data-number="1.2.2">
+<h3 data-number="1.2.2" class="anchored" data-anchor-id="the-run-proper"><span class="header-section-number">1.2.2</span> The Run Proper</h3>
+<p>Everything looks good in the dry-run so let’s go ahead and run. Although we haven’t made explicit point of it, this run will happen in the current directory with all files expected to be in and going to the current directory. That looks like this at the moment.</p>
+<pre><code>$ ls -l
+total 85136
+-rw-r--r--@ 1 macleand  2006   5205449  2 Jul  2019 ecoli_genome.fa
+-rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
+-rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
+-rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile</code></pre>
+<p>Run the pipeline with</p>
+<pre><code>snakemake final_alignments --snakefile my_pipeline.snakefile -c1</code></pre>
+<p>We get a lot of output to the screen (or the log if we specified that). Hopefully at the end we see</p>
+<pre><code>Finished job 0.
+3 of 3 steps (100%) done</code></pre>
+<p>an indication that it has completed everything (if not we’re into some debugging - more on that later). And the working directory looks like this now</p>
+<pre><code>-rw-r--r--  1 macleand  2006   9397482 28 Oct 10:13 aln.bam
+-rw-r--r--  1 macleand  2006   7929255 28 Oct 10:13 aln.sorted.bam
+-rw-r--r--@ 1 macleand  2006   5205449  2 Jul  2019 ecoli_genome.fa
+-rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
+-rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
+-rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile</code></pre>
+<p>All the files we expected to be created have been and are sitting nicely in the directory. Hurray!</p>
+</section>
+</section>
+<section id="the-first-awesome-thing-about-snakemake" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="the-first-awesome-thing-about-snakemake"><span class="header-section-number">1.3</span> The first awesome thing about <code>snakemake</code></h2>
+<p>So far this has all been very much like a bash script. The <code>snakemake</code> file seems to be just an elaborate reproduction. Now lets have a look at a killer feature that makes <code>snakemake</code> very much more useful than bash scripts - its ability to work out whether all parts of the pipeline are up to date and whether anything needs redoing.</p>
+<p>Let’s look at the dry-run output from the pipeline we just ran.</p>
+<pre><code>$ snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+Building DAG of jobs...
+Nothing to be done (all requested files are present and up to date).</code></pre>
+<p>Well, that’s reassuring. Nothing need be done. What if a component file changed. Lets look at what happens if an input file is updated. Using <code>touch</code> to update the timestamp on the reference file</p>
+<pre><code>$ sample_data touch ecoli_genome.fa
+$ sample_data ls -l
+total 119480
+-rw-r--r--  1 macleand  2006   9397482 28 Oct 10:13 aln.bam
+-rw-r--r--  1 macleand  2006   7929255 28 Oct 10:13 aln.sorted.bam
+-rw-r--r--@ 1 macleand  2006   5205449 28 Oct 10:32 ecoli_genome.fa
+-rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
+-rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
+-rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile</code></pre>
+<p>One of the source files is now newer than the outputs. What does <code>snakemake</code> now think needs to be done</p>
+<pre><code>$ snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+
+Building DAG of jobs...
+Job stats:
+job                 count    min threads    max threads
+----------------  -------  -------------  -------------
+align_and_bam           1              1              1
+final_alignments        1              1              1
+sort                    1              1              1
+total                   3              1              1</code></pre>
+<p>it thinks that the whole pipeline needs to be redone! This is the first awesome thing about <code>snakemake</code> - if one of the upstream files is updated (input or output files, it doesn’t matter), the relevant parts of the pipeline will be slated to run again (which in this small pipeline will be everything). <code>snakemake</code> will work out which bits need doing again automatically from the rule descriptions. In large pipelines this is a major time saver and increases reproducibility massively. Bash scripts must be manually managed which leads to more manual errors.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I find it really hard to overstate how useful this ability to pick-up-from-where-it-left-off is. It saves an immense amount of checking and redoing and re-issuing of the same commands when something went wrong - especially something catastrophic or hard to detect at the end. Or when you unexpectedly get a new sample and need to add it in, or when your boss wants to change one tiny thing. <code>snakemake</code> insane reproducibility is a huge win for research which is naturally iterative. Its true that there’s a slight learning curve and requires more investment in time at the start of the project, but that is won back in spades later.</p>
+</div>
+</div>
+</section>
+<section id="the-second-awesome-thing-about-snakemake" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="the-second-awesome-thing-about-snakemake"><span class="header-section-number">1.4</span> The second awesome thing about <code>snakemake</code></h2>
+<p>The next life improving thing about <code>snakemake</code> is how it handles files. Up to now we’ve hardcoded the file names into the rules. Thats not scalable. <code>snakemake</code> provides a clever pattern match facility between the input and output files to match them up between the rules, it cross-references these with actual filenames and fills in the patterns. It provides access to them using special objects called <code>wildcards</code>, <code>input</code> and <code>output</code>. All we need to do is specify the patterns in our rules and the inputs to the master rule (ie <code>final_alignments</code>). In essence, we start by describing the files we want to get out of the pipeline and <code>snakemake</code> works back from there according to our pattern.</p>
+<p>This is massively easier to see in the rules themselves. Here’s our original set of rules.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>And here’s our new set of rules</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    ecoli<span class="op">=</span><span class="st">'ecoli.sorted.bam'</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    pputida<span class="op">=</span><span class="st">'pputida.sorted.bam'</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">.sorted.bam"</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_left_R1.fq"</span>,</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_right_R2.fq"</span>,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Things to note:</p>
+<ol type="1">
+<li>The final rule is at the top - it doesn’t actually matter to <code>snakemake</code> what order the rules are in. In many cases for us it’s easier to have the last rule at the top. Note the common name scheme between the input file names.</li>
+<li>The <code>{sample}</code> is the wildcard. The <code>{}</code> is a replacement operator, the value of the wildcard will be put in there at runtime.</li>
+<li>The special <code>{input}</code> and <code>{output}</code> objects can have more than one attribute, so we can have more than one input or output file into a rule.</li>
+<li>We can thread the replacements into the <code>shell</code> commands to make them generic across samples too.</li>
+</ol>
+<p>So we can hopefully see how the rules link up to each other.</p>
+<p>What does the dry-run say in the following folder with multiple samples in there?</p>
+<pre><code>$ ls -l
+total 170264
+-rw-r--r--@ 1 macleand  2006   5205449 28 Oct 11:04 ecoli_genome.fa
+-rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 ecoli_left_R1.fq
+-rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 ecoli_right_R2.fq
+-rw-r--r--  1 macleand  2006       479 28 Oct 11:28 multi.snakefile
+-rw-r--r--@ 1 macleand  2006   5205449 28 Oct 11:04 pputida_genome.fa
+-rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 pputida_left_R1.fq
+-rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 pputida_right_R2.fq
+
+
+
+$ snakemake final_alignments --snakefile multi.snakefile -c1 -n
+Job stats:
+job                 count    min threads    max threads
+----------------  -------  -------------  -------------
+align_and_bam           2              1              1
+final_alignments        1              1              1
+sort                    2              1              1
+total                   5              1              1
+
+Reasons:
+    (check individual jobs above for details)
+    input files updated by another job:
+        final_alignments, sort
+    missing output files:
+        align_and_bam, sort</code></pre>
+<p>Looks great! <code>snakemake</code> has found all our new samples and increased the number of jobs needed accordingly. The figures below show a graphical version of the pipelines. See how snakemake has made it very easy to jump up in scale.</p>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img src="single.png" class="img-fluid"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img src="multi.png" class="img-fluid"></p>
+</div>
+</div>
+</div>
+</section>
+<section id="summary" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="summary"><span class="header-section-number">1.5</span> Summary</h2>
+<p>We’ve seen how the fundamentals of <code>snakemake</code> allow us to build efficient and reproducible pipelines. In the next section we’ll look at features of <code>snakemake</code> that help to power larger and more complex pipelines.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./features.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Useful <code>snakemake</code> features</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>
