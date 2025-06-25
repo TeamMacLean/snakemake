@@ -19,6 +19,6 @@ In this short tutorial we'll look at how to create `snakemake` pipelines for use
 
 This tutorial presumes you are at least a little familiar with bash scripts and Python (but not much) and that you have experience submitting and running jobs on a `slurm` cluster.
 
-To replicate the examples, you'll need the data here [sample_data.zip](sample_data.zip) and the programs, `minimap2`, `samtools` and `snakemake` which you can install from [conda](https://docs.conda.io/projects/conda/en/latest/) and [bioconda](https://bioconda.github.io/).
+To replicate the examples, you'll need the data here [sample_data.zip](sample_data.zip) and to setup your `snakemake` environment as described [here](https://bioinformatics.tsl.ac.uk/posts/a-downloadable-template-for-snakemake-projects/), which will set you up with the latest release.
 
 If you need any help with this please see the bioinformatics team.

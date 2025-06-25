@@ -47,7 +47,7 @@ That is the basis of it!
 
 ## Running the pipeline
 
-We run the rules by putting them in a file. Usually this is suffixed with `.snakefile` to give something like `my_pipeline.snakefile`. When we come to run the pipeline `snakemake` needs us to tell it the name of the rule to run (recall our base rule is `final_alignments` ), and the snakefile and the cores the pipeline is allowed to use with the `-c flag`. 
+We run the rules by putting them in a file. Usually this is suffixed with `.snakefile` or `.smk` to give something like `my_pipeline.snakefile` or `my_pipeline.smk`. When we come to run the pipeline `snakemake` needs us to tell it the name of the rule to run (recall our base rule is `final_alignments` ), and the snakefile and the cores the pipeline is allowed to use with the `-c flag`. 
 
 
 ### The dry-run
@@ -55,13 +55,13 @@ We run the rules by putting them in a file. Usually this is suffixed with `.snak
 Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run. Put together that makes something like  
 
 ```
-snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+snakemake final_alignments --snakefile my_pipeline.snakefile -c 1 -n
 ```
 
 :::{.callout-tip}
 ## Default file and rules
 
-Actually, `snakemake` looks for the default file `Snakefile` and the main rule `all` so if you use them you can have a command like `snakemake -c1 -n` which is less verbose but also less explicit. 
+Actually, `snakemake` looks for the default file `Snakefile` and the main rule `all` so if you use them you can have a command like `snakemake -c 1 -n` which is less verbose but also less explicit. 
 :::
 
 We get a lot of output. It can be broken down into a few bits,
@@ -87,7 +87,7 @@ total                   3              1              1
 
 #### The Jobs
 
-Next we get a much more granular view, each job is presented with the expected input and output and a reason why it needs running. Usually this will be either `missing output files` IE the output hasn't been created so the job still needs to run or `Input files updated by another job` meaning that an input file is newer than an output file (or when it is created it will be) so this file needs updating.
+Next we get a much more granular view, each job is presented with the expected input and output and a reason why it needs running. Usually this will be either `missing output files` i.e. the output hasn't been created so the job still needs to run or `Input files updated by another job` meaning that an input file is newer than an output file (or when it is created it will be) so this file needs updating.
 
 ```
 [Wed Oct 26 16:51:18 2022]
@@ -161,7 +161,7 @@ total 85136
 
 Run the pipeline with 
 ```
-snakemake final_alignments --snakefile my_pipeline.snakefile -c1
+snakemake final_alignments --snakefile my_pipeline.snakefile -c 1
 ```
 
 We get a lot of output to the screen (or the log if we specified that). Hopefully at the end we see
