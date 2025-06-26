@@ -3,6 +3,8 @@
 
 In this section we'll look at making and running a first pipeline and understanding why `snakemake` is better for you than `bash` scripts.
 
+The guidance given here is for using `snakemake` version `9.3` and an update from the previous tutorial.  Many of the recommendations are not only required but will also provide a robust and reproducible workflow.
+
 
 ## Making a `snakefile`
 

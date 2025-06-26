@@ -30,7 +30,7 @@ which will create all the combinations of those lists.
 
 ## The `config.yml` file
 
-We won't often have all our files in the current directory, nor want our results and intermediate files to go there, they'll usually be spread about the filesystem. Which means we will have to start dealing with varied paths. Recall that `snakemake` _is_ Python. This means that we can create paths using standard Python string operations like `+`. This is most useful when combined with a `config.yml` file which looks something like this
+We won't often have all our files in the current directory, nor want our results and intermediate files to go there, they'll usually be spread about the filesystem. Which means we will have to start dealing with varied paths. Recall that `snakemake` _is_ Python. This means that we can create paths using standard Python functions, like `os.path.join()`. This is most useful when combined with a `config.yaml` file which looks something like this
 
 ```
 scratch: "/path/to/a/scratch/folder/"
@@ -38,7 +38,9 @@ databases: "/path/to/a/database/folder/"
 results: "/path/to/a/results/folder"
 ```
 
-These paths make up a base set of paths that we may want to write or read from in our rules. When loaded into the snakefile a Python `dict` object called `config` is created that we can access using the keys named in `config.yml`. Here's an example
+These paths make up a base set of paths that we may want to write or read from in our rules. When loaded into the snakefile a Python `dict` object called `config` is created that we can access using the keys named in `config.yaml`. 
+
+Here's an example:
 
 ```{python}
 #| eval: false
@@ -49,20 +51,24 @@ treatments = ['test', 'control']
 
 configfile: "config.yml"
 
+RESULTS_DIR = config["results"]
+SCRATCH_DIR = config["scratch"]
+DATABASE_DIR = config["databases"]
+
 rule final_alignments:
-  input: expand( config['results'] + "{sample}_{time}_{treatment}.sorted.bam", sample=samples, time=timepoints, treatment=treatments)
+  input: expand(os.path.join(RESULTS_DIR,  "{sample}_{time}_{treatment}.sorted.bam", sample=samples, time=timepoints, treatment=treatments))
     
 rule sort:
-  input: config['scratch'] + "{sample}_{time}_{treatment}_aln.bam"
-  output: config['results'] + "{sample}_{time}_{treatment}.sorted.bam"
+  input: os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam")
+  output: os.path.join(RESULTS_DIR, "{sample}_{time}_{treatment}.sorted.bam")
   shell: "samtools sort {input} -o {output}"
 
 rule align_and_bam:
   input:
     fq1="{sample}_{time}_{treatment}_left_R1.fq",
     fq2="{sample}_{time}_{treatment}_right_R2.fq",
-    ref=config['databases'] + "{sample}_genome.fa"
-  output: config['scratch'] + "{sample}_{time}_{treatment}_aln.bam"
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam")
   shell: "minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | samtools view -S -h -b -q 25 -f 3 > {output}"
 
 ```
@@ -85,6 +91,48 @@ rule align_and_bam:
 
 The function `my_function()` _must_ return a single pathname as a string, as it is _just_ Python the function can be defined in the top of the `snakemake` file or imported.  We'll look at these in more depth later. 
 
+## Logging specific steps
+
+It is important to generate logs for our snakemake rules and steps within, as this will make troubleshooting easier.  To do this you can add the `log` attribute to each rule. 
+
+
+```{python}
+#| eval: false
+
+samples = ['ecoli', 'pputida']
+timepoints = ['0h', '2h']
+treatments = ['test', 'control']
+
+configfile: "config.yml"
+
+RESULTS_DIR = config["results"]
+SCRATCH_DIR = config["scratch"]
+DATABASE_DIR = config["databases"]
+
+# We add a location to store our logs
+LOG_DIR = os.path.join(RESULTS_DIR, "logs")
+
+rule final_alignments:
+  input: expand(os.path.join(RESULTS_DIR,  "{sample}_{time}_{treatment}.sorted.bam", sample=samples, time=timepoints, treatment=treatments))
+    
+rule sort:
+  input: os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam")
+  output: os.path.join(RESULTS_DIR, "{sample}_{time}_{treatment}.sorted.bam")
+  log: os.path.join(LOG_DIR, "sort_{sample}_{time}_{treatment}.log")
+  shell: "samtools sort {input} -o {output}"
+
+rule align_and_bam:
+  input:
+    fq1="{sample}_{time}_{treatment}_left_R1.fq",
+    fq2="{sample}_{time}_{treatment}_right_R2.fq",
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam")
+  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
+  shell: "minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | samtools view -S -h -b -q 25 -f 3 > {output}"
+
+```
+
+
 ## Rerunning a specific step
 
 If we really want to micro-manage our pipeline we can run individual steps at will. We have up to now been running the whole thing from the final rule. But any rule can be taken as the end point. Just use its name in the invocation,
@@ -103,8 +151,9 @@ rule align_and_bam:
   input:
     fq1=lambda wildcards: my_function(wildcards, "fq1")
     fq2=lambda wildcards: my_function(wildcards, "fq2")
-    ref=config['databases'] + "{sample}_genome.fa"
-  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
+  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   shell: "minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | samtools view -S -h -b -q 25 -f 3 > {output}"
 ```
 
@@ -120,8 +169,9 @@ rule align_and_bam:
   input:
     fq1=lambda wildcards: my_function(wildcards, "fq1")
     fq2=lambda wildcards: my_function(wildcards, "fq2")
-    ref=config['databases'] + "{sample}_genome.fa"
-  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
+  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   shell:"""
 minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
 samtools view -S -h -b -q 25 -f 3 > {output}
@@ -136,12 +186,17 @@ rule align_and_bam:
   input:
     fq1=lambda wildcards: my_function(wildcards, "fq1")
     fq2=lambda wildcards: my_function(wildcards, "fq2")
-    ref=config['databases'] + "{sample}_genome.fa"
-  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
+  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   shell:"bash scripts/do_alignments.sh {input.ref} {input.fq1} {input.fq2}"
 ```
 
 The `shell:` can also be replaced with `run:` which allows you to use Python directly in the snakefile.
+
+## Increasing reproducibility and portability
+
+Although you can run scripts to perform the commands, it is much better and more practical to run the tools directly.  It allows users to examine the workflow and immediately identify what commands are being carried out.  In addition, with new best practices, `snakemake` workflows will be built to include `singularity` containers for associated tools.  Thereby removing any need to source software and allow the workflow to be run on any computer that has `singularity` installed.  Most importantly though, if the `snakemake` workflow is re-run it will be using the same software version as used in the original run.
 
 
 ## Drawing the pipeline

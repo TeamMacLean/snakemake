@@ -2,32 +2,34 @@
 
 In this section we'll look at how to adapt your snakefile to run well across many nodes of a cluster. We'll look at
 
-  1. The `params` object
-  2. The command-line options for `snakemake` on the cluster
-  3. Custom functions for filenames
+  1. The `resources`` object
+  2. The `params` object
+  3. The command-line options for `snakemake` on the cluster
+  4. Custom functions for filenames
 
 
 ## How `snakemake` expects to run on a `slurm` cluster
 
-Briefly, `snakemake` expects each job to run individually on different machines on the cluster under the management of one core job that runs for the duration of the pipeline. That means that each job can have its own parameters and jobs will dispatch more quickly if they get the correct parameters for their needs. We will learn how to set the jobs parameters through the `params` object in the rule.
+Briefly, `snakemake` expects each job to run individually on different machines on the cluster under the management of one core job that runs for the duration of the pipeline. That means that each job can have its own resources and jobs will dispatch more quickly if they get the correct resources for their needs. We will learn how to set the jobs resources through the `resources` object in the rule.
 
 
-`params` is a rule attribute, like `input` and `output` that can take parameters to be passed through to the `shell` command run by that rule. It also can be referenced in the command-line invocation of snakemake. This makes it perfect for setting extra job options. Lets look at three examples of use, first just passing an option to a command
+`params` is a rule attribute, like `input` and `output` that can take parameters to be passed through to the `shell` command run by that rule. It also can be referenced in the command-line invocation of snakemake. This makes it perfect for setting extra job options. Lets look at some examples of use, first just passing an option to a command
 
 ## `params`
 
 ### Keeping the rule clean 
 
-This is mostly a way to be explicit and make params easy to see and rules clean.  Use the new params block like the wildcards
+This is mostly a way to be explicit and make parameters easy to see and rules clean.  Use the new `params` block like the wildcards
 
 ```{python}
 #| eval: false
 rule align_and_bam:
   input:
-    fq1=lambda wildcards: my_function(wildcards, "fq1")
-    fq2=lambda wildcards: my_function(wildcards, "fq2")
-    ref=config['databases'] + "{sample}_genome.fa"
-  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+    fq1=lambda wildcards: my_function(wildcards, "fq1"),
+    fq2=lambda wildcards: my_function(wildcards, "fq2"),
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
+  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   params:
     quality=25,
     flags=3
@@ -39,40 +41,67 @@ samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
 
 ### Dynamic parameter setting
 
-We can use `lambda` functions to generate values for parameters if we need to based on the values of wildcards, here we guess the memory needed for a job
+We can use `lambda` functions to generate values for parameters if we need to based on the values of wildcards, here we randomly obtain a sub-sampling seed
 
 ```{python}
 #| eval: false
 rule align_and_bam:
   input:
-    fq1=lambda wildcards: my_function(wildcards, "fq1")
-    fq2=lambda wildcards: my_function(wildcards, "fq2")
-    ref=config['databases'] + "{sample}_genome.fa"
-  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+    fq1=lambda wildcards: my_function(wildcards, "fq1"),
+    fq2=lambda wildcards: my_function(wildcards, "fq2"),
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
+  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   params:
-    mem=lambda: wildcards: guess_parameter(wildcards)
+    seed=lambda: wildcards: guess_parameter(wildcards),
     quality=25,
     flags=3
   shell:"""
 minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
-samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} > {output}
 """
 ```
 
-Note how we don't use this in the actual shell block. What's going on there? This links us to our third use, using the `params` info to set `slurm` options for this job. 
+Note the value at `params` can be additional files, output directories not required for downstream jobs and can be assigned from the `config.yaml`.
 
-### Using `params` to set `slurm` job options
+### Using `resources` to set `slurm` job options
 
-The `snakemake` command has an option called `--cluster` that specifies a template for the submission for each job. It takes a string that will resolve wildcards and pass them as options for `slurm`. Look at this
+The newer versions of `snakemake` now utilise "profiles" which allow a user to define a default set of parameters and specify if and what type of cluster is being utilised. Therefore, when working on `slurm` it is required that a "workflow profile" is provided.  
+
+A basic outline of this file is shown below
 
 ```
-snakemake --snakefile my.snakefile --cluster 'sbatch --mem={params.mem}'
+executor: slurm
+jobs: 100
+use-singularity: true  # change if you want to used sourced tools
+printshellcmds: true
+keep-going: true
+rerun-incomplete: true
+latency-wait: 60
+
+# Default resources for all rules
+default-resources:
+  slurm_partition: "tsl-short"
+  mem_mb: 16000
+  runtime: 30
+  slurm_account: "tsl"  # This must be "tsl" for SLURM
+
+# Default threads if not specified in rule
+set-threads:
+  __default__: 4  # Most of the rules use 1-4 threads, can set a default
+
+```
+Many of the parameters outlined above are self explanatory but note the options to provide default resources and threads.  This can be helpful if a number of your rules use similar settings.
+
+To run `snakemake` with a profile file, see below
+
+```
+snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile workflow_profile.yaml
 ```
 
-The `--cluster` option is hijacked for each job and values from the snakefile pushed in when the job is submitted.  In practice this means that each job will get its own specific value of `mem` from its `params` block, allowing us to specify the value as needed. 
+If a user wishes to provide specific `slurm` resources for a certain rule, then this can be provided by using the `resources` attribute.  In practice this means that the job associated with a rule will get its own specific value of `mem`, `partition` and any other `slurm` options, from its `resources` block, allowing the user to specify the value as needed. 
 
-We can specify more options arbitrarily. The following allows us to specify the queue as well and for some reason the number of cores (threads), has its own argument, giving us a rule like this ready for the cluster.
-
+Below is an example of using the `resources` attribute to assign `mem`, `partition` and `wc-key` (the value of which is located in the `config.yaml`).  Note when assigning the number of cores (threads), then the attribute `threads` is used.
 
 ```{python}
 #| eval: false
@@ -80,26 +109,24 @@ rule align_and_bam:
   input:
     fq1=lambda wildcards: my_function(wildcards, "fq1")
     fq2=lambda wildcards: my_function(wildcards, "fq2")
-    ref=config['databases'] + "{sample}_genome.fa"
-  output: temp(config['scratch'] + "{sample}_{time}_{treatment}_aln.bam")
+    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+  output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
+  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   threads: 8
+  resources:
+    slurm_extra = f"--wckey={config['wckey']}",
+    partition: "tsl-medium",
+    mem_mb = 12000
   params:
-    mem="32G",
-    queue="tsl-short",
+    seed=lambda: wildcards: guess_parameter(wildcards),
     quality=25,
     flags=3
   shell:"""
 minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
-samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} > {output}
 """
-
 ```
 
-Which we would add into the command line as
-
-```
-snakemake --snakefile my.snakefile --cluster 'sbatch --mem={params.mem} --partition={params.queue} -c {threads}'
-```
 
 ## `source`
 
