@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.1.251">
+<meta name="generator" content="quarto-1.3.361">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -17,9 +17,10 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -46,43 +47,13 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -120,7 +91,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -131,11 +103,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-    <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Working on a <code>slurm</code> cluster</span></h1>
-      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
-        <i class="bi bi-chevron-right"></i>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./cluster.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Working on a `slurm` cluster</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
       </button>
     </div>
   </nav>
@@ -143,73 +120,78 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Using snakemake to create robust and reproducible bioinformatic pipelines</a> 
     </div>
       </div>
-      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
         </div>
-      </div>
+        </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./intro.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">First Look</span></a>
+  <a href="./intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">First Look</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./features.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Useful <code>snakemake</code> features</span></a>
+  <a href="./features.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Useful <code>snakemake</code> features</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./cluster.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Working on a <code>slurm</code> cluster</span></a>
+  <a href="./cluster.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Working on a <code>slurm</code> cluster</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./summary.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Summary</span></a>
+  <a href="./summary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Summary</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./checkout.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">A Checkout Challenge</span></a>
+  <a href="./checkout.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">A Checkout Challenge</span></span></a>
   </div>
 </li>
     </ul>
     </div>
 </nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#how-snakemake-expects-to-run-on-a-slurm-cluster" id="toc-how-snakemake-expects-to-run-on-a-slurm-cluster" class="nav-link active" data-scroll-target="#how-snakemake-expects-to-run-on-a-slurm-cluster"><span class="toc-section-number">3.1</span>  How <code>snakemake</code> expects to run on a <code>slurm</code> cluster</a></li>
-  <li><a href="#params" id="toc-params" class="nav-link" data-scroll-target="#params"><span class="toc-section-number">3.2</span>  <code>params</code></a>
+  <li><a href="#how-snakemake-expects-to-run-on-a-slurm-cluster" id="toc-how-snakemake-expects-to-run-on-a-slurm-cluster" class="nav-link active" data-scroll-target="#how-snakemake-expects-to-run-on-a-slurm-cluster"><span class="header-section-number">3.1</span> How <code>snakemake</code> expects to run on a <code>slurm</code> cluster</a></li>
+  <li><a href="#params" id="toc-params" class="nav-link" data-scroll-target="#params"><span class="header-section-number">3.2</span> <code>params</code></a>
   <ul class="collapse">
-  <li><a href="#keeping-the-rule-clean" id="toc-keeping-the-rule-clean" class="nav-link" data-scroll-target="#keeping-the-rule-clean"><span class="toc-section-number">3.2.1</span>  Keeping the rule clean</a></li>
-  <li><a href="#dynamic-parameter-setting" id="toc-dynamic-parameter-setting" class="nav-link" data-scroll-target="#dynamic-parameter-setting"><span class="toc-section-number">3.2.2</span>  Dynamic parameter setting</a></li>
-  <li><a href="#using-params-to-set-slurm-job-options" id="toc-using-params-to-set-slurm-job-options" class="nav-link" data-scroll-target="#using-params-to-set-slurm-job-options"><span class="toc-section-number">3.2.3</span>  Using <code>params</code> to set <code>slurm</code> job options</a></li>
+  <li><a href="#keeping-the-rule-clean" id="toc-keeping-the-rule-clean" class="nav-link" data-scroll-target="#keeping-the-rule-clean"><span class="header-section-number">3.2.1</span> Keeping the rule clean</a></li>
+  <li><a href="#dynamic-parameter-setting" id="toc-dynamic-parameter-setting" class="nav-link" data-scroll-target="#dynamic-parameter-setting"><span class="header-section-number">3.2.2</span> Dynamic parameter setting</a></li>
+  <li><a href="#using-resources-to-set-slurm-job-options" id="toc-using-resources-to-set-slurm-job-options" class="nav-link" data-scroll-target="#using-resources-to-set-slurm-job-options"><span class="header-section-number">3.2.3</span> Using <code>resources</code> to set <code>slurm</code> job options</a></li>
   </ul></li>
-  <li><a href="#source" id="toc-source" class="nav-link" data-scroll-target="#source"><span class="toc-section-number">3.3</span>  <code>source</code></a></li>
-  <li><a href="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" id="toc-using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" class="nav-link" data-scroll-target="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths"><span class="toc-section-number">3.4</span>  Using a file-of-files as a database for mapping wildcards to filesystem paths</a></li>
-  <li><a href="#setting-the-log-file-and-naming-the-job" id="toc-setting-the-log-file-and-naming-the-job" class="nav-link" data-scroll-target="#setting-the-log-file-and-naming-the-job"><span class="toc-section-number">3.5</span>  Setting the log file and naming the job</a></li>
-  <li><a href="#assigning-the-maximum-number-of-parallel-jobs" id="toc-assigning-the-maximum-number-of-parallel-jobs" class="nav-link" data-scroll-target="#assigning-the-maximum-number-of-parallel-jobs"><span class="toc-section-number">3.6</span>  Assigning the maximum number of parallel jobs</a></li>
-  <li><a href="#waiting-for-the-filesystem-to-catch-up" id="toc-waiting-for-the-filesystem-to-catch-up" class="nav-link" data-scroll-target="#waiting-for-the-filesystem-to-catch-up"><span class="toc-section-number">3.7</span>  Waiting for the filesystem to catch up</a></li>
-  <li><a href="#unlocking-a-crashed-process" id="toc-unlocking-a-crashed-process" class="nav-link" data-scroll-target="#unlocking-a-crashed-process"><span class="toc-section-number">3.8</span>  Unlocking a crashed process</a></li>
-  <li><a href="#creating-a-dispatch-script" id="toc-creating-a-dispatch-script" class="nav-link" data-scroll-target="#creating-a-dispatch-script"><span class="toc-section-number">3.9</span>  Creating a dispatch script</a></li>
-  <li><a href="#organising-the-snakemake-bits-and-pieces" id="toc-organising-the-snakemake-bits-and-pieces" class="nav-link" data-scroll-target="#organising-the-snakemake-bits-and-pieces"><span class="toc-section-number">3.10</span>  Organising the <code>snakemake</code> bits and pieces</a></li>
+  <li><a href="#singularity" id="toc-singularity" class="nav-link" data-scroll-target="#singularity"><span class="header-section-number">3.3</span> <code>singularity</code></a></li>
+  <li><a href="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" id="toc-using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" class="nav-link" data-scroll-target="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths"><span class="header-section-number">3.4</span> Using a file-of-files as a database for mapping wildcards to filesystem paths</a></li>
+  <li><a href="#assigning-the-maximum-number-of-parallel-jobs" id="toc-assigning-the-maximum-number-of-parallel-jobs" class="nav-link" data-scroll-target="#assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.5</span> Assigning the maximum number of parallel jobs</a></li>
+  <li><a href="#waiting-for-the-filesystem-to-catch-up" id="toc-waiting-for-the-filesystem-to-catch-up" class="nav-link" data-scroll-target="#waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.6</span> Waiting for the filesystem to catch up</a></li>
+  <li><a href="#unlocking-a-crashed-process" id="toc-unlocking-a-crashed-process" class="nav-link" data-scroll-target="#unlocking-a-crashed-process"><span class="header-section-number">3.7</span> Unlocking a crashed process</a></li>
+  <li><a href="#organising-the-snakemake-bits-and-pieces" id="toc-organising-the-snakemake-bits-and-pieces" class="nav-link" data-scroll-target="#organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.8</span> Organising the <code>snakemake</code> bits and pieces</a></li>
   </ul>
 </nav>
     </div>
@@ -218,7 +200,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Working on a <code>slurm</code> cluster</span></h1>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Working on a <code>slurm</code> cluster</span></h1>
 </div>
 
 
@@ -226,6 +208,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="quarto-title-meta">
 
     
+  
     
   </div>
   
@@ -234,96 +217,127 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <p>In this section we’ll look at how to adapt your snakefile to run well across many nodes of a cluster. We’ll look at</p>
 <ol type="1">
+<li>The `resources`` object</li>
 <li>The <code>params</code> object</li>
 <li>The command-line options for <code>snakemake</code> on the cluster</li>
 <li>Custom functions for filenames</li>
 </ol>
 <section id="how-snakemake-expects-to-run-on-a-slurm-cluster" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="how-snakemake-expects-to-run-on-a-slurm-cluster"><span class="header-section-number">3.1</span> How <code>snakemake</code> expects to run on a <code>slurm</code> cluster</h2>
-<p>Briefly, <code>snakemake</code> expects each job to run individually on different machines on the cluster under the management of one core job that runs for the duration of the pipeline. That means that each job can have its own parameters and jobs will dispatch more quickly if they get the correct parameters for their needs. We will learn how to set the jobs parameters through the <code>params</code> object in the rule.</p>
-<p><code>params</code> is a rule attribute, like <code>input</code> and <code>output</code> that can take parameters to be passed through to the <code>shell</code> command run by that rule. It also can be referenced in the command-line invocation of snakemake. This makes it perfect for setting extra job options. Lets look at three examples of use, first just passing an option to a command</p>
+<p>Briefly, <code>snakemake</code> expects each job to run individually on different machines on the cluster under the management of one core job that runs for the duration of the pipeline. That means that each job can have its own resources and jobs will dispatch more quickly if they get the correct resources for their needs. We will learn how to set the jobs resources through the <code>resources</code> object in the rule.</p>
+<p><code>params</code> is a rule attribute, like <code>input</code> and <code>output</code> that can take parameters to be passed through to the <code>shell</code> command run by that rule. It also can be referenced in the command-line invocation of snakemake. This makes it perfect for setting extra job options. Lets look at some examples of use, first just passing an option to a command</p>
 </section>
 <section id="params" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="params"><span class="header-section-number">3.2</span> <code>params</code></h2>
 <section id="keeping-the-rule-clean" class="level3" data-number="3.2.1">
 <h3 data-number="3.2.1" class="anchored" data-anchor-id="keeping-the-rule-clean"><span class="header-section-number">3.2.1</span> Keeping the rule clean</h3>
-<p>This is mostly a way to be explicit and make params easy to see and rules clean. Use the new params block like the wildcards</p>
+<p>This is mostly a way to be explicit and make parameters easy to see and rules clean. Use the new <code>params</code> block like the wildcards</p>
 <div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>config[<span class="st">'databases'</span>] <span class="op">+</span> <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  output: temp(config[<span class="st">'scratch'</span>] <span class="op">+</span> <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  params:</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  params:</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="dynamic-parameter-setting" class="level3" data-number="3.2.2">
 <h3 data-number="3.2.2" class="anchored" data-anchor-id="dynamic-parameter-setting"><span class="header-section-number">3.2.2</span> Dynamic parameter setting</h3>
-<p>We can use <code>lambda</code> functions to generate values for parameters if we need to based on the values of wildcards, here we guess the memory needed for a job</p>
+<p>We can use <code>lambda</code> functions to generate values for parameters if we need to based on the values of wildcards, here we randomly obtain a sub-sampling seed</p>
 <div class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>config[<span class="st">'databases'</span>] <span class="op">+</span> <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  output: temp(config[<span class="st">'scratch'</span>] <span class="op">+</span> <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  params:</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  params:</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Note how we don’t use this in the actual shell block. What’s going on there? This links us to our third use, using the <code>params</code> info to set <code>slurm</code> options for this job.</p>
+<p>Note the value at <code>params</code> can be additional files, output directories not required for downstream jobs and can be assigned from the <code>config.yaml</code>.</p>
 </section>
-<section id="using-params-to-set-slurm-job-options" class="level3" data-number="3.2.3">
-<h3 data-number="3.2.3" class="anchored" data-anchor-id="using-params-to-set-slurm-job-options"><span class="header-section-number">3.2.3</span> Using <code>params</code> to set <code>slurm</code> job options</h3>
-<p>The <code>snakemake</code> command has an option called <code>--cluster</code> that specifies a template for the submission for each job. It takes a string that will resolve wildcards and pass them as options for <code>slurm</code>. Look at this</p>
-<pre><code>snakemake --snakefile my.snakefile --cluster 'sbatch --mem={params.mem}'</code></pre>
-<p>The <code>--cluster</code> option is hijacked for each job and values from the snakefile pushed in when the job is submitted. In practice this means that each job will get its own specific value of <code>mem</code> from its <code>params</code> block, allowing us to specify the value as needed.</p>
-<p>We can specify more options arbitrarily. The following allows us to specify the queue as well and for some reason the number of cores (threads), has its own argument, giving us a rule like this ready for the cluster.</p>
+<section id="using-resources-to-set-slurm-job-options" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3" class="anchored" data-anchor-id="using-resources-to-set-slurm-job-options"><span class="header-section-number">3.2.3</span> Using <code>resources</code> to set <code>slurm</code> job options</h3>
+<p>The newer versions of <code>snakemake</code> now utilise “profiles” which allow a user to define a default set of parameters and specify if and what type of cluster is being utilised. Therefore, when working on <code>slurm</code> it is required that a “workflow profile” is provided.</p>
+<p>A basic outline of this file is shown below</p>
+<pre><code>executor: slurm
+jobs: 100
+use-singularity: true  # change if you want to used sourced tools
+printshellcmds: true
+keep-going: true
+rerun-incomplete: true
+latency-wait: 60
+
+# Default resources for all rules
+default-resources:
+  slurm_partition: "tsl-short"
+  mem_mb: 16000
+  runtime: 30
+  slurm_account: "tsl"  # This must be "tsl" for SLURM
+
+# Default threads if not specified in rule
+set-threads:
+  __default__: 4  # Most of the rules use 1-4 threads, can set a default
+</code></pre>
+<p>Many of the parameters outlined above are self explanatory but note the options to provide default resources and threads. This can be helpful if a number of your rules use similar settings.</p>
+<p>To run <code>snakemake</code> with a profile file, see below</p>
+<pre><code>snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile workflow_profile.yaml</code></pre>
+<p>If a user wishes to provide specific <code>slurm</code> resources for a certain rule, then this can be provided by using the <code>resources</code> attribute. In practice this means that the job associated with a rule will get its own specific value of <code>mem</code>, <code>partition</code> and any other <code>slurm</code> options, from its <code>resources</code> block, allowing the user to specify the value as needed.</p>
+<p>Below is an example of using the <code>resources</code> attribute to assign <code>mem</code>, <code>partition</code> and <code>wc-key</code> (the value of which is located in the <code>config.yaml</code>). Note when assigning the number of cores (threads), then the attribute <code>threads</code> is used.</p>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>config[<span class="st">'databases'</span>] <span class="op">+</span> <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  output: temp(config[<span class="st">'scratch'</span>] <span class="op">+</span> <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  threads: <span class="dv">8</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  params:</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">=</span><span class="st">"32G"</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    queue<span class="op">=</span><span class="st">"tsl-short"</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  threads: <span class="dv">8</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  resources:</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    slurm_extra <span class="op">=</span> <span class="ss">f"--wckey=</span><span class="sc">{</span>config[<span class="st">'wckey'</span>]<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    partition: <span class="st">"tsl-medium"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    mem_mb <span class="op">=</span> <span class="dv">12000</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  params:</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Which we would add into the command line as</p>
-<pre><code>snakemake --snakefile my.snakefile --cluster 'sbatch --mem={params.mem} --partition={params.queue} -c {threads}'</code></pre>
 </section>
 </section>
-<section id="source" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="source"><span class="header-section-number">3.3</span> <code>source</code></h2>
-<p>On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like <code>source</code> and <code>singularity</code> images have to be loaded in each job and not globally. They wont work if you put them in the command line, instead they have to go in the <code>shell</code> block (or script) like this</p>
+<section id="singularity" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="singularity"><span class="header-section-number">3.3</span> <code>singularity</code></h2>
+<p>On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like <code>source</code> and <code>singularity</code> images have to be loaded in each job and not globally.</p>
+<p><code>snakemake</code> introduced the ability to run required tools from containers e.g.&nbsp;Docker, Singularity. To enable this function we add the attribute <code>container</code> to the snakefile.</p>
 <div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">source minimap2-2.5</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">source samtools-1.9</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>container: config[<span class="st">"singularity_image"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Where the container location has been defined in the <code>config.yaml</code>.</p>
+<p>For each snakemake workflow that is built, there should be a specific <code>singularity</code> container for the required software/tools to carry out the analysis the snakefile defines. To build a container you require a defintion file. Often we can use Mamba to install our tools, therefore a template definition file has been written that can be modified for each individuals needs. This can be located on the HPC at:</p>
+<p><code>/tsl/hpc-scripts/bioinformatics/blank_snake/lib/tools.def</code></p>
+<p>Once the defintion file has been modified the container can be built. To build the container the <code>software</code> node must be used, which can be accessed on the HPC by typing:</p>
+<p><code>software</code></p>
+<p>Once within the <code>software</code> node, navigate to the location with your container definition file and type:</p>
+<pre><code>sudo singularity build tools.sif tools.def</code></pre>
+<p>It is the path to the <code>tools.sif</code> that will be added to the <code>config.yaml</code> to be used by <code>snakemake</code>.</p>
 </section>
 <section id="using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths"><span class="header-section-number">3.4</span> Using a file-of-files as a database for mapping wildcards to filesystem paths</h2>
@@ -335,108 +349,112 @@ ecoli, /my/seq/db/ecoli_mega_R1.fastq.gz, /my/seq/db/ecol_mega_R2_fastq.gz, cont
 ...</code></pre>
 <p>Note that the file names don’t have a common pattern, so won’t easily be resolved by <code>snakemake</code> wildcards. Instead we can build lists of the columns by parsing the file in a usual Python way at the top of the <code>snakemake</code> file</p>
 <div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> []</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>fq1 <span class="op">=</span> []</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>fq2 <span class="op">=</span> []</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> []</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> []</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"sample_info.csv"</span>) <span class="im">as</span> csv:</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> l <span class="kw">in</span> csv:</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        l <span class="op">=</span> l.rstrip(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> l.startswith(<span class="st">"sample"</span>):</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>            els <span class="op">=</span> l.split(<span class="st">","</span>)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>            samples.append( els[<span class="dv">0</span>] )</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>            fq1.append( els[<span class="dv">1</span>] )</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>            fq2.append( els[<span class="dv">2</span>] )</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            times.append( els[<span class="dv">3</span>] )</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>            treatments.append( els[<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> []</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>fq1 <span class="op">=</span> []</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fq2 <span class="op">=</span> []</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> []</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> []</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"sample_info.csv"</span>) <span class="im">as</span> csv:</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> l <span class="kw">in</span> csv:</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        l <span class="op">=</span> l.rstrip(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> l.startswith(<span class="st">"sample"</span>):</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            els <span class="op">=</span> l.split(<span class="st">","</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            samples.append( els[<span class="dv">0</span>] )</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            fq1.append( els[<span class="dv">1</span>] )</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            fq2.append( els[<span class="dv">2</span>] )</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            times.append( els[<span class="dv">3</span>] )</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>            treatments.append( els[<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can generate functions that given a <code>sample</code> will return the other items e.g <code>fq</code></p>
 <div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_to_read(sample, samples, fq):</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">'''given a sample and list of samples and a list of fqs returns the fq with the same index</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">as the sample'''</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fq[samples.index(sample)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_to_read(sample, samples, fq):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">'''given a sample and list of samples and a list of fqs returns the fq with the same index</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">as the sample'''</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fq[samples.index(sample)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So now we can use the wildcard to get back the fq file in the <code>lambda</code> function in the rule like this</p>
 <div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: sample_to_read(wildcards.sample, samples, fq1)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: saample_to_read(wildcards.sample, samples, fq2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: sample_to_read(wildcards.sample, samples, fq1)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: saample_to_read(wildcards.sample, samples, fq2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Which returns the full filesytem path for each fq based on the <code>sample</code> wildcard.</p>
+<p>Which returns the full filesystem path for each fq based on the <code>sample</code> wildcard.</p>
 <p>This is a really useful feature, but it can be tempting to think of it as a solution to everything. Try to use it only for files that come <em>into</em> the <code>snakemake</code> pipeline at the beginning and not for things that are generated internally or for final outputs.</p>
 </section>
-<section id="setting-the-log-file-and-naming-the-job" class="level2" data-number="3.5">
-<h2 data-number="3.5" class="anchored" data-anchor-id="setting-the-log-file-and-naming-the-job"><span class="header-section-number">3.5</span> Setting the log file and naming the job</h2>
-<p>It is a good idea to explicitly set the log filename. Otherwise the run log info will go to a generically named slurm output file. This is a problem because every job run on the HPC under <code>snakemake</code> generates a slurm output file which is generically named and the main one can get lost. Similarly, the output from the slurm <code>squeue</code> command can get busy with many jobs, so it can also be a good idea to set the main job’s name. Logfile can be set with the <code>sbatch</code> option <code>-o</code> and name with <code>-J</code> e.g</p>
-<pre><code>sbatch -J my_jobs -o my_jobs.log ...</code></pre>
-</section>
-<section id="assigning-the-maximum-number-of-parallel-jobs" class="level2" data-number="3.6">
-<h2 data-number="3.6" class="anchored" data-anchor-id="assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.6</span> Assigning the maximum number of parallel jobs</h2>
+<section id="assigning-the-maximum-number-of-parallel-jobs" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.5</span> Assigning the maximum number of parallel jobs</h2>
 <p>You can limit the number of jobs that will run concurrently with <code>-j</code>. <code>snakemake</code> will not allow more than the specified number of jobs into the queue at any one time. It will manage the submission of jobs right until the completion of the pipeline whatever value you choose. It doesn’t create any extra work for you, just throttles <code>snakemake</code> should you require it. EG</p>
 <pre><code>snakemake --snakefile my_pipeline.snakefile --j 20</code></pre>
+<p>This limit can also be defined in the workflow profile, so the <code>--j</code> can be ommitted if using a profile (which is recommended).</p>
 </section>
-<section id="waiting-for-the-filesystem-to-catch-up" class="level2" data-number="3.7">
-<h2 data-number="3.7" class="anchored" data-anchor-id="waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.7</span> Waiting for the filesystem to catch up</h2>
+<section id="waiting-for-the-filesystem-to-catch-up" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.6</span> Waiting for the filesystem to catch up</h2>
 <p>In a HPC environment we sometimes have to wait for processes to finish writing to disk. These operation can be considered complete by the operating system but still need writing or the filesystem fully updated. So if a new process in a pipeline can’t find the output its expecting from a finished process becauce the filesystem is behind, the whole thing could fall over. To avoid this we can set a latency time in which the <code>snakemake</code> process will wait and keep checking for the file to arrive before crashing out. Ususally 60 seconds is fine. Set it as follows</p>
 <pre><code>snakemake --snakefile my_pipeline.snakefile --latency-wait 60</code></pre>
+<p>As with specifying the number of parallel jobs, latency-wait can be defined in the workflow profile.</p>
 </section>
-<section id="unlocking-a-crashed-process" class="level2" data-number="3.8">
-<h2 data-number="3.8" class="anchored" data-anchor-id="unlocking-a-crashed-process"><span class="header-section-number">3.8</span> Unlocking a crashed process</h2>
+<section id="unlocking-a-crashed-process" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="unlocking-a-crashed-process"><span class="header-section-number">3.7</span> Unlocking a crashed process</h2>
 <p>Occasionally the <code>snakemake</code> pipeline will crash, often because one of its dependent jobs has failed to complete properly (perhaps it ran out of memory). In this state <code>snakemake</code> will become locked, to prevent further corruption of the pipeline. The next step is for you to check the logs to see what went wrong and manually resolve it. Then (and only then) can you unlock the <code>snakemake</code> pipeline and restart it. Thankfully, <code>snakemake</code> will pick up from where it left off, so no earlier progress will be lost.</p>
 <p>You can unlock with the <code>snakemake</code> option <code>--unlock</code>, e.g</p>
 <pre><code>snakemake --snakefile my_pipeline.snakefile --unlock</code></pre>
 </section>
-<section id="creating-a-dispatch-script" class="level2" data-number="3.9">
-<h2 data-number="3.9" class="anchored" data-anchor-id="creating-a-dispatch-script"><span class="header-section-number">3.9</span> Creating a dispatch script</h2>
-<p>With all these things to remember for the cluster it can be useful to write a master dispatch script to hold the <code>snakemake</code> and cluster options. Here’s an example one that allows to call it in one of the following three ways</p>
-<ol type="1">
-<li><code>bash do_snake.sh</code></li>
-<li><code>bash do_snake.sh dryrun</code></li>
-<li><code>bash do_snake.sh unlock</code></li>
-</ol>
-<p><code>1.</code> Let’s you run the pipeline proper, <code>2.</code> does the dryrun, <code>3</code> will unlock a crashed process.</p>
-<p>Here’s what that example script looks like</p>
-<pre><code>if [ -z "$1" ]
-then
-    sbatch -J my_job \
-    -o my_job.log \
-    --wrap="source snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile my_main_rule --cluster 'sbatch --partition={params.queue} -c {threads} --mem={params.mem}' \ 
-    -j 20 \
-    --latency-wait 60" 
-elif [ $1 = 'unlock' ]
-then
-    sbatch -J unlock \
-        -o my_job.log \
-        --wrap="snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile --unlock" \
-        --partition="tsl-short" \
-        --mem="16G"
-elif [ $1 = "dryrun" ]
-then
-    sbatch -J dryrun \
-    -o my_job.log \
-    --wrap="source snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile -n" \
-    --partition="tsl-short" \
-    --mem="16G"
-fi</code></pre>
-<p>Note that <code>snakemake</code> will need loading with <code>source</code>.</p>
-</section>
-<section id="organising-the-snakemake-bits-and-pieces" class="level2" data-number="3.10">
-<h2 data-number="3.10" class="anchored" data-anchor-id="organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.10</span> Organising the <code>snakemake</code> bits and pieces</h2>
-<p>If you are going to end up with a pipeline with lots of steps and subscripts and a dispatch script, it can be a good idea to organise into a project structure. Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the <code>config file</code> section. Then consider the top level directory as the base for executing everything. Something like this would be good</p>
+<section id="organising-the-snakemake-bits-and-pieces" class="level2" data-number="3.8">
+<h2 data-number="3.8" class="anchored" data-anchor-id="organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.8</span> Organising the <code>snakemake</code> bits and pieces</h2>
+<p>During the setup steps outlined in the <a href="./index.html">Preface</a> there is guidance provided for generating your Project Structure. Following this structure will help organise the required files. Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the <code>config file</code> section. Then consider the top level directory as the base for executing everything. If using the project structure outlined in the <a href="./index.html">Preface</a> then it will look like this</p>
 <pre><code>$ pwd 
 my_pipeline 
-$ tree
-.
-├── README.txt
-├── config.yaml
-├── results
-└── scripts
-    ├── do_pipeline.sh
-    └── my_pipeline.snakemake</code></pre>
-<p>so that when you’re in the <code>my_pipeline</code> directory everything can be run as e.g <code>bash scripts/do_pipeline.sh dryrun</code></p>
+$ tree .
+
+my_pipeline/
+├── lib/
+│   ├── config.yaml        # Configuration file
+│   ├── snakemake_env.yaml # Mamba environment definition
+│   └── tools.def         # Template for Singularity image definition
+├── profiles/
+│   └── config.v9+.yaml   # workflow profile and SLURM-specific settings
+├── src/
+│   ├── run_workflow.py   # Main execution script
+│   └── workflow.smk      # Snakemake workflow rules
+├── VERSION              # Version information
+└── README.md            # This file</code></pre>
+<p>so that when you’re in the <code>my_pipeline</code> directory everything can be run as e.g <code>./src/run_workflow.py --dry-run</code></p>
+<p>The added benefit of using the <code>blank_snake</code> to build your workflow, is that it comes with a handy execution script called <code>run_workflow.py</code>, which, provided the required files are present, will created the sbatch jobs for you.</p>
+<p>The help options for this script ar</p>
+<pre><code>./src/run_workflow.py -h
+usage: run_workflow.py [-h] [--config CONFIG] [--dry-run] [--unlock] [--rule RULE]
+                       [--force] [--version] [--dag]
+
+Run the UNNAMED DRAFT pipeline
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --config CONFIG  Path to config file
+  --dry-run        Perform a dry run
+  --unlock         Unlock a locked directory
+  --rule RULE      Run a specific rule (e.g., generate_report)
+  --force          Force run the rule even if outputs exist
+  --version        Display version information
+  --dag            Generate a PDF of the DAG (workflow_dag.pdf)
+
+Examples:
+  run_workflow --config myproject/config.yaml              # Run pipeline with custom config
+  run_workflow --dry-run                                   # Perform a dry run
+  run_workflow --rule the_second_rule                      # Run until a specific rule
+  run_workflow --unlock                                    # Unlock a snakemake directory
+  run_workflow --version                                   # Display version information
+  run_workflow --dag                                       # Generate DAG visualization
+
+Configuration:
+  The config file must contain all required parameters defined in this script.</code></pre>
+<p>Importantly we want to ensure we have our <code>config.yaml</code> setup as needed:</p>
+<pre><code>scratch: "/tsl/scratch/username" ## Path to your scratch
+workdir: "directory_in_scratch"     ## Directory in scratch to store the results, don't reuse the path to scratch
+singularity_image: "tools.sif"     ## Path to the singularity image to use
+wckey: "your_wckey"     ## Your HPC allocation key
+main_job_partition: "tsl_short"     ## The partition to use for the main snakemake job
+some_config_parameter: "your_value"     ## any additional parameters to pass to snakemake</code></pre>
 
 
 </section>
@@ -469,9 +487,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
     }
   });
   clipboard.on('success', function(e) {
@@ -483,7 +515,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     button.classList.add('code-copy-button-checked');
     var currentTitle = button.getAttribute("title");
     button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
     setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
       button.setAttribute("title", currentTitle);
       button.classList.remove('code-copy-button-checked');
     }, 1000);
@@ -519,24 +568,128 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return note.innerHTML;
     });
   }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
   var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
   for (var i=0; i<bibliorefs.length; i++) {
     const ref = bibliorefs[i];
-    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
-    tippyHover(ref, function() {
-      var popup = window.document.createElement('div');
-      cites.forEach(function(cite) {
-        var citeDiv = window.document.createElement('div');
-        citeDiv.classList.add('hanging-indent');
-        citeDiv.classList.add('csl-entry');
-        var biblioDiv = window.document.getElementById('ref-' + cite);
-        if (biblioDiv) {
-          citeDiv.innerHTML = biblioDiv.innerHTML;
-        }
-        popup.appendChild(citeDiv);
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
       });
-      return popup.innerHTML;
-    });
+    }
   }
 });
 </script>

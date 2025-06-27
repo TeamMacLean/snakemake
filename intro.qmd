@@ -54,7 +54,15 @@ We run the rules by putting them in a file. Usually this is suffixed with `.snak
 
 ### The dry-run
 
-Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run. Put together that makes something like  
+Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run. Put together that makes something like
+
+Remember to use snakemake you need to activate the Mamba environment (which you created during the setup described on the previous page).  To do so type:
+
+```
+source activate /path/to/snakemake_environment
+
+```
+After this you can run the commands as written.
 
 ```
 snakemake final_alignments --snakefile my_pipeline.snakefile -c 1 -n
@@ -141,11 +149,6 @@ Reasons:
 This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
 ```
 
-:::{.callout-tip}
-## Using a log
-As your list of jobs grows and the output from `snakemake` becomes large, its best to use a log file. Do that with `-o somename.log` e.g 
-`snakemake --snakefile final_alignments my_pipeline.snakefile -n -o my_pipeline.log`
-:::
 
 ### The Run Proper
 

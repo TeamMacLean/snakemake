@@ -127,21 +127,37 @@ samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {p
 """
 ```
 
+## `singularity`
 
-## `source`
+On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like `source` and `singularity` images have to be loaded in each job and not globally. 
 
-On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like `source` and `singularity` images have to be loaded in each job and not globally. They wont work if you put them in the command line, instead they have to go in the `shell` block (or script) like this
+`snakemake` introduced the ability to run required tools from containers e.g. Docker, Singularity.  To enable this function we add the attribute `container` to the snakefile.
+
 
 ```{python}
 #| eval: false
-  shell:"""
-source minimap2-2.5
-source samtools-1.9
-minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
-samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
-"""
+
+container: config["singularity_image"]
+
 ```
 
+Where the container location has been defined in the `config.yaml`.
+
+For each snakemake workflow that is built, there should be a specific `singularity` container for the required software/tools to carry out the analysis the snakefile defines.  To build a container you require a defintion file.  Often we can use Mamba to install our tools, therefore a template definition file has been written that can be modified for each individuals needs.  This can be located on the HPC at:
+
+`/tsl/hpc-scripts/bioinformatics/blank_snake/lib/tools.def`
+
+Once the defintion file has been modified the container can be built.  To build the container the `software` node must be used, which can be accessed on the HPC by typing:
+
+`software`
+
+Once within the `software` node, navigate to the location with your container definition file and type:
+
+```
+sudo singularity build tools.sif tools.def
+```
+
+It is the path to the `tools.sif` that will be added to the `config.yaml` to be used by `snakemake`.
 
 ## Using a file-of-files as a database for mapping wildcards to filesystem paths
 
@@ -198,17 +214,9 @@ rule align_and_bam:
 
 ```
 
-Which returns the full filesytem path for each fq based on the `sample` wildcard.
+Which returns the full filesystem path for each fq based on the `sample` wildcard.
 
 This is a really useful feature, but it can be tempting to think of it as a solution to everything. Try to use it only for files that come _into_ the `snakemake` pipeline at the beginning and not for things that are generated internally or for final outputs.
-
-## Setting the log file and naming the job
-
-It is a good idea to explicitly set the log filename. Otherwise the run log info will go to a generically named slurm output file. This is a problem because every job run on the HPC under `snakemake` generates a slurm output file which is generically named and the main one can get lost. Similarly, the output from the slurm `squeue` command can get busy with many jobs, so it can also be a good idea to set the main job's name. Logfile can be set with the `sbatch` option `-o` and name with `-J` e.g
-
-```
-sbatch -J my_jobs -o my_jobs.log ...
-```
 
 ## Assigning the maximum number of parallel jobs
 
@@ -217,6 +225,7 @@ You can limit the number of jobs that will run concurrently with `-j`. `snakemak
 ```
 snakemake --snakefile my_pipeline.snakefile --j 20
 ```
+This limit can also be defined in the workflow profile, so the `--j` can be ommitted if using a profile (which is recommended).
 
 ## Waiting for the filesystem to catch up
 
@@ -225,6 +234,7 @@ In a HPC environment we sometimes have to wait for processes to finish writing t
 ```
 snakemake --snakefile my_pipeline.snakefile --latency-wait 60
 ```
+As with specifying the number of parallel jobs, latency-wait can be defined in the workflow profile.
 
 ## Unlocking a crashed process
 
@@ -236,62 +246,75 @@ You can unlock with the `snakemake` option `--unlock`, e.g
 snakemake --snakefile my_pipeline.snakefile --unlock
 ```
 
-## Creating a dispatch script
-
-With all these things to remember for the cluster it can be useful to write a master dispatch script to hold the `snakemake` and cluster options. Here's an example one that allows to call it in one of the following three ways
-
-  1. `bash do_snake.sh`
-  2. `bash do_snake.sh dryrun`
-  3. `bash do_snake.sh unlock`
-  
-`1.` Let's you run the pipeline proper, `2.` does the dryrun, `3` will unlock a crashed process.
-
-Here's what that example script looks like
-
-```
-if [ -z "$1" ]
-then
-    sbatch -J my_job \
-    -o my_job.log \
-    --wrap="source snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile my_main_rule --cluster 'sbatch --partition={params.queue} -c {threads} --mem={params.mem}' \ 
-    -j 20 \
-    --latency-wait 60" 
-elif [ $1 = 'unlock' ]
-then
-    sbatch -J unlock \
-        -o my_job.log \
-        --wrap="snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile --unlock" \
-        --partition="tsl-short" \
-        --mem="16G"
-elif [ $1 = "dryrun" ]
-then
-    sbatch -J dryrun \
-    -o my_job.log \
-    --wrap="source snakemake_x.x.x; snakemake --snakefile my_pipeline.snakefile -n" \
-    --partition="tsl-short" \
-    --mem="16G"
-fi
-```
-
-Note that `snakemake` will need loading with `source`.
-
-
 ## Organising the `snakemake` bits and pieces
 
-If you are going to end up with a pipeline with lots of steps and subscripts and a dispatch script, it can be a good idea to organise into a project structure. Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the `config file` section. Then consider the top level directory as the base for executing everything. Something like this would be good
+During the setup steps outlined in the [Preface](index.qmd) there is guidance provided for generating your Project Structure.  Following this structure will help organise the required files.  Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the `config file` section. Then consider the top level directory as the base for executing everything. If using the project structure outlined in the [Preface](index.qmd) then it will look like this
 
 ```
 $ pwd 
 my_pipeline 
-$ tree
-.
-├── README.txt
-├── config.yaml
-├── results
-└── scripts
-    ├── do_pipeline.sh
-    └── my_pipeline.snakemake
+$ tree .
+
+my_pipeline/
+├── lib/
+│   ├── config.yaml        # Configuration file
+│   ├── snakemake_env.yaml # Mamba environment definition
+│   └── tools.def         # Template for Singularity image definition
+├── profiles/
+│   └── config.v9+.yaml   # workflow profile and SLURM-specific settings
+├── src/
+│   ├── run_workflow.py   # Main execution script
+│   └── workflow.smk      # Snakemake workflow rules
+├── VERSION              # Version information
+└── README.md            # This file
 ```
 
-so that when you're in the `my_pipeline` directory everything can be run as e.g `bash scripts/do_pipeline.sh dryrun`
+so that when you're in the `my_pipeline` directory everything can be run as e.g `./src/run_workflow.py --dry-run`
+
+The added benefit of using the `blank_snake` to build your workflow, is that it comes with a handy execution script called `run_workflow.py`, which, provided the required files are present, will created the sbatch jobs for you.
+
+The help options for this script ar
+
+```
+./src/run_workflow.py -h
+usage: run_workflow.py [-h] [--config CONFIG] [--dry-run] [--unlock] [--rule RULE]
+                       [--force] [--version] [--dag]
+
+Run the UNNAMED DRAFT pipeline
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --config CONFIG  Path to config file
+  --dry-run        Perform a dry run
+  --unlock         Unlock a locked directory
+  --rule RULE      Run a specific rule (e.g., generate_report)
+  --force          Force run the rule even if outputs exist
+  --version        Display version information
+  --dag            Generate a PDF of the DAG (workflow_dag.pdf)
+
+Examples:
+  run_workflow --config myproject/config.yaml              # Run pipeline with custom config
+  run_workflow --dry-run                                   # Perform a dry run
+  run_workflow --rule the_second_rule                      # Run until a specific rule
+  run_workflow --unlock                                    # Unlock a snakemake directory
+  run_workflow --version                                   # Display version information
+  run_workflow --dag                                       # Generate DAG visualization
+
+Configuration:
+  The config file must contain all required parameters defined in this script.
+  ```
+
+Importantly we want to ensure we have our `config.yaml` setup as needed:
+
+```
+scratch: "/tsl/scratch/username" ## Path to your scratch
+workdir: "directory_in_scratch"     ## Directory in scratch to store the results, don't reuse the path to scratch
+singularity_image: "tools.sif"     ## Path to the singularity image to use
+wckey: "your_wckey"     ## Your HPC allocation key
+main_job_partition: "tsl_short"     ## The partition to use for the main snakemake job
+some_config_parameter: "your_value"     ## any additional parameters to pass to snakemake
+```
+
+
+
 
