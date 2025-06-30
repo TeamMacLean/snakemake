@@ -96,8 +96,10 @@ Many of the parameters outlined above are self explanatory but note the options 
 To run `snakemake` with a profile file, see below
 
 ```
-snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile workflow_profile.yaml
+snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile config.v9+.yaml
 ```
+
+Not that this workflow profile needs to be named "config.v9+.yaml" in order for snakemake to recognise it as a profile and utilise the defaults as expected.
 
 If a user wishes to provide specific `slurm` resources for a certain rule, then this can be provided by using the `resources` attribute.  In practice this means that the job associated with a rule will get its own specific value of `mem`, `partition` and any other `slurm` options, from its `resources` block, allowing the user to specify the value as needed. 
 
@@ -220,21 +222,19 @@ This is a really useful feature, but it can be tempting to think of it as a solu
 
 ## Assigning the maximum number of parallel jobs
 
-You can limit the number of jobs that will run concurrently with `-j`. `snakemake` will not allow more than the specified number of jobs into the queue at any one time. It will manage the submission of jobs right until the completion of the pipeline whatever value you choose. It doesn't create any extra work for you, just throttles `snakemake` should you require it. EG
+You can limit the number of jobs that will run concurrently and it is recommended to use the `workflow_profile` to do this.
 
-```
-snakemake --snakefile my_pipeline.snakefile --j 20
-```
-This limit can also be defined in the workflow profile, so the `--j` can be ommitted if using a profile (which is recommended).
+`jobs: 100`
+
+`snakemake` will not allow more than the specified number of jobs into the queue at any one time. It will manage the submission of jobs right until the completion of the pipeline whatever value you choose. It doesn't create any extra work for you, just throttles `snakemake` should you require it. 
 
 ## Waiting for the filesystem to catch up
 
-In a HPC environment we sometimes have to wait for processes to finish writing to disk. These operation can be considered complete by the operating system but still need writing or the filesystem fully updated. So if a new process in a pipeline can't find the output its expecting from a finished process becauce the filesystem is behind, the whole thing could fall over. To avoid this we can set a latency time in which the `snakemake` process will wait and keep checking for the file to arrive before crashing out. Ususally 60 seconds is fine. Set it as follows
+In a HPC environment we sometimes have to wait for processes to finish writing to disk. These operation can be considered complete by the operating system but still need writing or the filesystem fully updated. So if a new process in a pipeline can't find the output its expecting from a finished process becauce the filesystem is behind, the whole thing could fall over. To avoid this we can set a latency time in which the `snakemake` process will wait and keep checking for the file to arrive before crashing out. Ususally 60 seconds is fine. This can be set again using the `workflow_profile` under:
 
-```
-snakemake --snakefile my_pipeline.snakefile --latency-wait 60
-```
-As with specifying the number of parallel jobs, latency-wait can be defined in the workflow profile.
+`latency-wait: 60`
+
+As with specifying the number of parallel jobs, it is recommended to set these values using this method.
 
 ## Unlocking a crashed process
 
@@ -273,7 +273,21 @@ so that when you're in the `my_pipeline` directory everything can be run as e.g 
 
 The added benefit of using the `blank_snake` to build your workflow, is that it comes with a handy execution script called `run_workflow.py`, which, provided the required files are present, will created the sbatch jobs for you.
 
-The help options for this script ar
+It is recommended you use this script for submitting the snakemake job.  With this in mind and remembering we are using our `workflow_profile` to set defaults e.g. `config.v9+.yaml`, ensure your default runtime is set for long enough for your whole snakemake run to complete.  The master slurm job needs to outlast the duration of all the jobs run within the pipeline.
+
+The parameter to look for is under `default-resources` and "runtime"
+
+```
+# Default resources for all rules
+default-resources:
+  slurm_partition: "tsl-short"
+  mem_mb: 16000
+  runtime: 30
+  slurm_account: "tsl"  # This must be "tsl" for SLURM
+
+```
+
+The help options for this script are
 
 ```
 ./src/run_workflow.py -h
