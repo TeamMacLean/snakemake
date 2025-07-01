@@ -95,6 +95,8 @@ The function `my_function()` _must_ return a single pathname as a string, as it 
 
 It is important to generate logs for our snakemake rules and steps within, as this will make troubleshooting easier.  To do this you can add the `log` attribute to each rule.  Note it is also required that you add to the shell line after your job commands the following: `2> {log}` 
 
+It is fine to include this even if your output uses `>` to redirect stdout, as `2>` redirects stderror.
+
 
 ```{python}
 #| eval: false
@@ -140,7 +142,7 @@ rule align_and_bam:
 If we really want to micro-manage our pipeline we can run individual steps at will. We have up to now been running the whole thing from the final rule. But any rule can be taken as the end point. Just use its name in the invocation,
 
 ```
-snakemake <any rule> --snakefile my.snakefile
+./src/run_workflow.py --rule <any rule>
 ```
 
 ## Deleting intermediate files
@@ -156,7 +158,7 @@ rule align_and_bam:
     ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
   log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
-  shell: "minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | samtools view -S -h -b -q 25 -f 3 > {output}"
+  shell: "minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | samtools view -S -h -b -q 25 -f 3 > {output} 2> {log.samtools}"
 ```
 
 This saves as lot of space during runtime for big pipelines _and_ saves a lot of clean up. 
@@ -175,8 +177,7 @@ rule align_and_bam:
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
   log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   shell:"""
-minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
-samtools view -S -h -b -q 25 -f 3 > {output}
+minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | \ samtools view -S -h -b -q 25 -f 3 > {output} 2> {log.samtools}
 """
 ```
 
@@ -203,21 +204,12 @@ Although you can run scripts to perform the commands, it is much better and more
 
 ## Drawing the pipeline
 
-It is possible to get `snakemake` to generate a picture of your pipeline, which is great for understanding when things get complicated or showing your boss how involved these things are. We use the `--dag` option in conjunction with `graphviz` (which is installed with the `snakemake` environment). Here's the magic spell
+It is possible to get `snakemake` to generate a picture of your pipeline, which is great for understanding when things get complicated or showing your boss how involved these things are. We use the `--dag` option in conjunction with `graphviz` (which is installed with the `snakemake` environment). Our handy running script handles this and outputs the generated picture to your specified {RESULTS_DIR}
 
 ```
-snakemake --snakefile my.snakefile --dag | dot -Tpng -Gsize=9,15\! -Gdpi=100 > pipeline.png
+./src/run_workflow.py --dag
 
 ```
-
-If you don't want the whole set of files in there, and just want to see the 'core' rules then you can use `--rulegraph` instead of `--dag`
-
-```
-snakemake --snakefile my.snakefile --rulegraph | dot -Tpng -Gsize=9,15\! -Gdpi=100 > pipeline.png
-
-```
-
-
 
 ## Summary
 

@@ -217,7 +217,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>In this section we’ll look at how to adapt your snakefile to run well across many nodes of a cluster. We’ll look at</p>
 <ol type="1">
-<li>The `resources`` object</li>
+<li>The <code>resources</code> object</li>
 <li>The <code>params</code> object</li>
 <li>The command-line options for <code>snakemake</code> on the cluster</li>
 <li>Custom functions for filenames</li>
@@ -265,8 +265,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note the value at <code>params</code> can be additional files, output directories not required for downstream jobs and can be assigned from the <code>config.yaml</code>.</p>
@@ -296,7 +296,8 @@ set-threads:
 </code></pre>
 <p>Many of the parameters outlined above are self explanatory but note the options to provide default resources and threads. This can be helpful if a number of your rules use similar settings.</p>
 <p>To run <code>snakemake</code> with a profile file, see below</p>
-<pre><code>snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile workflow_profile.yaml</code></pre>
+<pre><code>snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile config.v9+.yaml</code></pre>
+<p>Not that this workflow profile needs to be named “config.v9+.yaml” in order for snakemake to recognise it as a profile and utilise the defaults as expected.</p>
 <p>If a user wishes to provide specific <code>slurm</code> resources for a certain rule, then this can be provided by using the <code>resources</code> attribute. In practice this means that the job associated with a rule will get its own specific value of <code>mem</code>, <code>partition</code> and any other <code>slurm</code> options, from its <code>resources</code> block, allowing the user to specify the value as needed.</p>
 <p>Below is an example of using the <code>resources</code> attribute to assign <code>mem</code>, <code>partition</code> and <code>wc-key</code> (the value of which is located in the <code>config.yaml</code>). Note when assigning the number of cores (threads), then the attribute <code>threads</code> is used.</p>
 <div class="cell" data-execution_count="3">
@@ -317,8 +318,8 @@ set-threads:
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
 <span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
 <span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
 <span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -384,15 +385,15 @@ ecoli, /my/seq/db/ecoli_mega_R1.fastq.gz, /my/seq/db/ecol_mega_R2_fastq.gz, cont
 </section>
 <section id="assigning-the-maximum-number-of-parallel-jobs" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.5</span> Assigning the maximum number of parallel jobs</h2>
-<p>You can limit the number of jobs that will run concurrently with <code>-j</code>. <code>snakemake</code> will not allow more than the specified number of jobs into the queue at any one time. It will manage the submission of jobs right until the completion of the pipeline whatever value you choose. It doesn’t create any extra work for you, just throttles <code>snakemake</code> should you require it. EG</p>
-<pre><code>snakemake --snakefile my_pipeline.snakefile --j 20</code></pre>
-<p>This limit can also be defined in the workflow profile, so the <code>--j</code> can be ommitted if using a profile (which is recommended).</p>
+<p>You can limit the number of jobs that will run concurrently and it is recommended to use the <code>workflow_profile</code> to do this.</p>
+<p><code>jobs: 100</code></p>
+<p><code>snakemake</code> will not allow more than the specified number of jobs into the queue at any one time. It will manage the submission of jobs right until the completion of the pipeline whatever value you choose. It doesn’t create any extra work for you, just throttles <code>snakemake</code> should you require it.</p>
 </section>
 <section id="waiting-for-the-filesystem-to-catch-up" class="level2" data-number="3.6">
 <h2 data-number="3.6" class="anchored" data-anchor-id="waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.6</span> Waiting for the filesystem to catch up</h2>
-<p>In a HPC environment we sometimes have to wait for processes to finish writing to disk. These operation can be considered complete by the operating system but still need writing or the filesystem fully updated. So if a new process in a pipeline can’t find the output its expecting from a finished process becauce the filesystem is behind, the whole thing could fall over. To avoid this we can set a latency time in which the <code>snakemake</code> process will wait and keep checking for the file to arrive before crashing out. Ususally 60 seconds is fine. Set it as follows</p>
-<pre><code>snakemake --snakefile my_pipeline.snakefile --latency-wait 60</code></pre>
-<p>As with specifying the number of parallel jobs, latency-wait can be defined in the workflow profile.</p>
+<p>In a HPC environment we sometimes have to wait for processes to finish writing to disk. These operation can be considered complete by the operating system but still need writing or the filesystem fully updated. So if a new process in a pipeline can’t find the output its expecting from a finished process becauce the filesystem is behind, the whole thing could fall over. To avoid this we can set a latency time in which the <code>snakemake</code> process will wait and keep checking for the file to arrive before crashing out. Ususally 60 seconds is fine. This can be set again using the <code>workflow_profile</code> under:</p>
+<p><code>latency-wait: 60</code></p>
+<p>As with specifying the number of parallel jobs, it is recommended to set these values using this method.</p>
 </section>
 <section id="unlocking-a-crashed-process" class="level2" data-number="3.7">
 <h2 data-number="3.7" class="anchored" data-anchor-id="unlocking-a-crashed-process"><span class="header-section-number">3.7</span> Unlocking a crashed process</h2>
@@ -421,7 +422,16 @@ my_pipeline/
 └── README.md            # This file</code></pre>
 <p>so that when you’re in the <code>my_pipeline</code> directory everything can be run as e.g <code>./src/run_workflow.py --dry-run</code></p>
 <p>The added benefit of using the <code>blank_snake</code> to build your workflow, is that it comes with a handy execution script called <code>run_workflow.py</code>, which, provided the required files are present, will created the sbatch jobs for you.</p>
-<p>The help options for this script ar</p>
+<p>It is recommended you use this script for submitting the snakemake job. With this in mind and remembering we are using our <code>workflow_profile</code> to set defaults e.g.&nbsp;<code>config.v9+.yaml</code>, ensure your default runtime is set for long enough for your whole snakemake run to complete. The master slurm job needs to outlast the duration of all the jobs run within the pipeline.</p>
+<p>The parameter to look for is under <code>default-resources</code> and “runtime”</p>
+<pre><code># Default resources for all rules
+default-resources:
+  slurm_partition: "tsl-short"
+  mem_mb: 16000
+  runtime: 30
+  slurm_account: "tsl"  # This must be "tsl" for SLURM
+</code></pre>
+<p>The help options for this script are</p>
 <pre><code>./src/run_workflow.py -h
 usage: run_workflow.py [-h] [--config CONFIG] [--dry-run] [--unlock] [--rule RULE]
                        [--force] [--version] [--dag]

@@ -62,19 +62,27 @@ Remember to use snakemake you need to activate the Mamba environment (which you 
 source activate /path/to/snakemake_environment
 
 ```
-After this you can run the commands as written.
+However, as we are using `run_workflow.py` this step is unnecessary as it will source the environment for you.  Therefore, you can simply run the following to produce a dryrun
 
 ```
-snakemake final_alignments --snakefile my_pipeline.snakefile -c 1 -n
+./src/run_workflow.py --dry-run
+
+```
+This will produce the following output:
+
+```
+Running command: sbatch --partition tsl-long --wckey wckey -J snakemake_9.3 --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
+Submitted batch job 13329947
+
 ```
 
-:::{.callout-tip}
-## Default file and rules
+We get a lot of output, which can be found within the slurm-XXXXXX.out file, which can be viewed using your screen-based text editor of choice e.g. `nano`, `vim` etc.  
 
-Actually, `snakemake` looks for the default file `Snakefile` and the main rule `all` so if you use them you can have a command like `snakemake -c 1 -n` which is less verbose but also less explicit. 
-:::
+```
+nano slurm-13329947.out
+```
 
-We get a lot of output. It can be broken down into a few bits,
+It can be broken down into a few bits,
 
   1. The Summary
   2. The Jobs
@@ -166,10 +174,10 @@ total 85136
 
 Run the pipeline with 
 ```
-snakemake final_alignments --snakefile my_pipeline.snakefile -c 1
+./src/run_workflow.py
 ```
 
-We get a lot of output to the screen (or the log if we specified that). Hopefully at the end we see
+We get a lot of output to the screen our slurm-XXXXXX.out file. Hopefully at the end we see
 
 ```
 Finished job 0.
@@ -196,9 +204,29 @@ So far this has all been very much like a bash script. The `snakemake` file seem
 Let's look at the dry-run output from the pipeline we just ran.
 
 ```
-$ snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+$ ./src/run_workflow.py --dry-run
+Running command: sbatch --partition tsl-long --wckey wckey -J snakemake_9.3 --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
+Submitted batch job 13331525
+```
+If we examine our slurm-XXXXXX.out then we will obtain the following:
+
+```
+nano slurm-13331525.out
+
+Using workflow specific profile profiles for setting default command line arguments.
+host: t384n18
 Building DAG of jobs...
-Nothing to be done (all requested files are present and up to date).
+Job stats:
+job	 count
+-----  -------
+total        0
+
+Job stats:
+job	 count
+-----  -------
+total        0
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
 ```
 
 Well, that's reassuring. Nothing need be done. What if a component file changed. Lets look at what happens if an input file is updated. Using `touch` to update the timestamp on the reference file
@@ -218,7 +246,7 @@ total 119480
 One of the source files is now newer than the outputs. What does `snakemake` now think needs to be done
 
 ```
-$ snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+$ ./src/run_workflow.py --dry-run
 
 Building DAG of jobs...
 Job stats:
@@ -240,7 +268,7 @@ I find it really hard to overstate how useful this ability to pick-up-from-where
 
 ## The second awesome thing about `snakemake`
 
-The next life improving thing about `snakemake` is how it handles files. Up to now we've hardcoded the file names into the rules. Thats not scalable. `snakemake` provides a clever pattern match facility between the input and output files to match them up between the rules, it cross-references these with actual filenames and fills in the patterns. It provides access to them using special objects called `wildcards`, `input` and `output`. All we need to do is specify the patterns in our rules and the inputs to the master rule (ie `final_alignments`). In essence, we start by describing the files we want to get out of the pipeline and `snakemake` works back from there according to our pattern. 
+The next life improving thing about `snakemake` is how it handles files. Up to now we've hardcoded the file names into the rules. That's not scalable. `snakemake` provides a clever pattern match facility between the input and output files to match them up between the rules, it cross-references these with actual filenames and fills in the patterns. It provides access to them using special objects called `wildcards`, `input` and `output`. All we need to do is specify the patterns in our rules and the inputs to the master rule (ie `final_alignments`). In essence, we start by describing the files we want to get out of the pipeline and `snakemake` works back from there according to our pattern. 
 
 This is massively easier to see in the rules themselves. Here's our original set of rules. 
 
@@ -315,7 +343,7 @@ total 170264
 
 
 
-$ snakemake final_alignments --snakefile multi.snakefile -c1 -n
+$ ./src/run_workflow.py --dry-run
 Job stats:
 job                 count    min threads    max threads
 ----------------  -------  -------------  -------------

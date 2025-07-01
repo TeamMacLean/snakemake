@@ -282,7 +282,8 @@ results: "/path/to/a/results/folder"</code></pre>
 </section>
 <section id="logging-specific-steps" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="logging-specific-steps"><span class="header-section-number">2.4</span> Logging specific steps</h2>
-<p>It is important to generate logs for our snakemake rules and steps within, as this will make troubleshooting easier. To do this you can add the <code>log</code> attribute to each rule.</p>
+<p>It is important to generate logs for our snakemake rules and steps within, as this will make troubleshooting easier. To do this you can add the <code>log</code> attribute to each rule. Note it is also required that you add to the shell line after your job commands the following: <code>2&gt; {log}</code></p>
+<p>It is fine to include this even if your output uses <code>&gt;</code> to redirect stdout, as <code>2&gt;</code> redirects stderror.</p>
 <div class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> [<span class="st">'ecoli'</span>, <span class="st">'pputida'</span>]</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>timepoints <span class="op">=</span> [<span class="st">'0h'</span>, <span class="st">'2h'</span>]</span>
@@ -304,7 +305,7 @@ results: "/path/to/a/results/folder"</code></pre>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(RESULTS_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>)</span>
 <span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"sort_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log}</span><span class="st">"</span></span>
 <span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
 <span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
@@ -312,14 +313,16 @@ results: "/path/to/a/results/folder"</code></pre>
 <span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_right_R2.fq"</span>,</span>
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  log: </span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    minimap<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"minimap_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>),</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="rerunning-a-specific-step" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="rerunning-a-specific-step"><span class="header-section-number">2.5</span> Rerunning a specific step</h2>
 <p>If we really want to micro-manage our pipeline we can run individual steps at will. We have up to now been running the whole thing from the final rule. But any rule can be taken as the end point. Just use its name in the invocation,</p>
-<pre><code>snakemake &lt;any rule&gt; --snakefile my.snakefile</code></pre>
+<pre><code>./src/run_workflow.py --rule &lt;any rule&gt;</code></pre>
 </section>
 <section id="deleting-intermediate-files" class="level2" data-number="2.6">
 <h2 data-number="2.6" class="anchored" data-anchor-id="deleting-intermediate-files"><span class="header-section-number">2.6</span> Deleting intermediate files</h2>
@@ -332,7 +335,7 @@ results: "/path/to/a/results/folder"</code></pre>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This saves as lot of space during runtime for big pipelines <em>and</em> saves a lot of clean up.</p>
 </section>
@@ -348,9 +351,8 @@ results: "/path/to/a/results/folder"</code></pre>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | \ samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A common alternative that prevents the snakefile from getting gummed up with job specifics is just to put the commands in a bash script and call that. Any script that can be run on the command line can be run this way, including Python, R etc</p>
 <div class="cell" data-execution_count="8">
@@ -371,11 +373,8 @@ results: "/path/to/a/results/folder"</code></pre>
 </section>
 <section id="drawing-the-pipeline" class="level2" data-number="2.9">
 <h2 data-number="2.9" class="anchored" data-anchor-id="drawing-the-pipeline"><span class="header-section-number">2.9</span> Drawing the pipeline</h2>
-<p>It is possible to get <code>snakemake</code> to generate a picture of your pipeline, which is great for understanding when things get complicated or showing your boss how involved these things are. We use the <code>--dag</code> option in conjunction with <code>graphviz</code> (which will need installing separately). Here’s the magic spell</p>
-<pre><code>snakemake --snakefile my.snakefile --dag | dot -Tpng -Gsize=9,15\! -Gdpi=100 &gt; pipeline.png
-</code></pre>
-<p>If you don’t want the whole set of files in there, and just want to see the ‘core’ rules then you can use <code>--rulegraph</code> instead of <code>--dag</code></p>
-<pre><code>snakemake --snakefile my.snakefile --rulegraph | dot -Tpng -Gsize=9,15\! -Gdpi=100 &gt; pipeline.png
+<p>It is possible to get <code>snakemake</code> to generate a picture of your pipeline, which is great for understanding when things get complicated or showing your boss how involved these things are. We use the <code>--dag</code> option in conjunction with <code>graphviz</code> (which is installed with the <code>snakemake</code> environment). Our handy running script handles this and outputs the generated picture to your specified {RESULTS_DIR}</p>
+<pre><code>./src/run_workflow.py --dag
 </code></pre>
 </section>
 <section id="summary" class="level2" data-number="2.10">
