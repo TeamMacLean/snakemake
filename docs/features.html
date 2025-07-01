@@ -318,6 +318,13 @@ results: "/path/to/a/results/folder"</code></pre>
 <span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>For snakemake specific logs, you will find a hidden directory with the associated log files within your project directory. These logs can be very helpful for troubleshooting specific rules and associated samples.</p>
+<pre><code>ls -lah .snakemake/slurm_logs/
+total 280K
+drwxrwx---  7 taz23vul TSL_20 187 Jul  1 12:36 .
+drwxrwx--- 18 taz23vul TSL_20 435 Jul  1 12:36 ..
+drwxrwx---  8 taz23vul TSL_20 193 Jun 25 11:52 rule_align_and_bam
+drwxrwx---  2 taz23vul TSL_20   0 Jul  1 12:37 rule_sort</code></pre>
 </section>
 <section id="rerunning-a-specific-step" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="rerunning-a-specific-step"><span class="header-section-number">2.5</span> Rerunning a specific step</h2>
@@ -328,21 +335,6 @@ results: "/path/to/a/results/folder"</code></pre>
 <h2 data-number="2.6" class="anchored" data-anchor-id="deleting-intermediate-files"><span class="header-section-number">2.6</span> Deleting intermediate files</h2>
 <p>Quite often there’s no need to keep anything but the final result file(s). Since we can regenerate intermediate files easily using its rule in the <code>snakefile</code> we can usually just tell <code>snakemake</code> to remove output files when they’re no longer needed by wrapping the path in the <code>temp()</code> function, like this</p>
 <div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>This saves as lot of space during runtime for big pipelines <em>and</em> saves a lot of clean up.</p>
-</section>
-<section id="more-shell" class="level2" data-number="2.7">
-<h2 data-number="2.7" class="anchored" data-anchor-id="more-shell"><span class="header-section-number">2.7</span> More <code>shell</code></h2>
-<p>In all our examples we’ve used a <code>shell</code> line to hold the command. We can make the <code>shell</code> command multi-line by wrapping it in Python triple quotes, enabling us to have longer commands/chains in the snakefile</p>
-<div class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
@@ -350,12 +342,14 @@ results: "/path/to/a/results/folder"</code></pre>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | \ samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>A common alternative that prevents the snakefile from getting gummed up with job specifics is just to put the commands in a bash script and call that. Any script that can be run on the command line can be run this way, including Python, R etc</p>
-<div class="cell" data-execution_count="8">
+<p>This saves as lot of space during runtime for big pipelines <em>and</em> saves a lot of clean up.</p>
+</section>
+<section id="more-shell" class="level2" data-number="2.7">
+<h2 data-number="2.7" class="anchored" data-anchor-id="more-shell"><span class="header-section-number">2.7</span> More <code>shell</code></h2>
+<p>In all our examples we’ve used a <code>shell</code> line to hold the command. We can make the <code>shell</code> command multi-line by wrapping it in Python triple quotes, enabling us to have longer commands/chains in the snakefile</p>
+<div class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
@@ -363,7 +357,20 @@ results: "/path/to/a/results/folder"</code></pre>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"bash scripts/do_alignments.sh </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | \ samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A common alternative that prevents the snakefile from getting gummed up with job specifics is just to put the commands in a bash script and call that. Any script that can be run on the command line can be run this way, including Python, R etc</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"bash scripts/do_alignments.sh </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code>shell:</code> can also be replaced with <code>run:</code> which allows you to use Python directly in the snakefile.</p>
 </section>

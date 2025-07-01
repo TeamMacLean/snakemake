@@ -136,6 +136,16 @@ rule align_and_bam:
 
 ```
 
+For snakemake specific logs, you will find a hidden directory with the associated log files within your project directory.  These logs can be very helpful for troubleshooting specific rules and associated samples.
+
+```
+ls -lah .snakemake/slurm_logs/
+total 280K
+drwxrwx---  7 taz23vul TSL_20 187 Jul  1 12:36 .
+drwxrwx--- 18 taz23vul TSL_20 435 Jul  1 12:36 ..
+drwxrwx---  8 taz23vul TSL_20 193 Jun 25 11:52 rule_align_and_bam
+drwxrwx---  2 taz23vul TSL_20   0 Jul  1 12:37 rule_sort
+```
 
 ## Rerunning a specific step
 
