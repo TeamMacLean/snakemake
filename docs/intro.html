@@ -179,15 +179,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#making-a-snakefile" id="toc-making-a-snakefile" class="nav-link active" data-scroll-target="#making-a-snakefile"><span class="header-section-number">1.1</span> Making a <code>snakefile</code></a></li>
-  <li><a href="#running-the-pipeline" id="toc-running-the-pipeline" class="nav-link" data-scroll-target="#running-the-pipeline"><span class="header-section-number">1.2</span> Running the pipeline</a>
+  <li><a href="#singularity" id="toc-singularity" class="nav-link active" data-scroll-target="#singularity"><span class="header-section-number">1.1</span> <code>singularity</code></a></li>
+  <li><a href="#configuration" id="toc-configuration" class="nav-link" data-scroll-target="#configuration"><span class="header-section-number">1.2</span> Configuration</a></li>
+  <li><a href="#making-a-snakefile" id="toc-making-a-snakefile" class="nav-link" data-scroll-target="#making-a-snakefile"><span class="header-section-number">1.3</span> Making a <code>snakefile</code></a></li>
+  <li><a href="#running-the-pipeline" id="toc-running-the-pipeline" class="nav-link" data-scroll-target="#running-the-pipeline"><span class="header-section-number">1.4</span> Running the pipeline</a>
   <ul class="collapse">
-  <li><a href="#the-dry-run" id="toc-the-dry-run" class="nav-link" data-scroll-target="#the-dry-run"><span class="header-section-number">1.2.1</span> The dry-run</a></li>
-  <li><a href="#the-run-proper" id="toc-the-run-proper" class="nav-link" data-scroll-target="#the-run-proper"><span class="header-section-number">1.2.2</span> The Run Proper</a></li>
+  <li><a href="#the-dry-run" id="toc-the-dry-run" class="nav-link" data-scroll-target="#the-dry-run"><span class="header-section-number">1.4.1</span> The dry-run</a></li>
+  <li><a href="#the-run-proper" id="toc-the-run-proper" class="nav-link" data-scroll-target="#the-run-proper"><span class="header-section-number">1.4.2</span> The Run Proper</a></li>
   </ul></li>
-  <li><a href="#the-first-awesome-thing-about-snakemake" id="toc-the-first-awesome-thing-about-snakemake" class="nav-link" data-scroll-target="#the-first-awesome-thing-about-snakemake"><span class="header-section-number">1.3</span> The first awesome thing about <code>snakemake</code></a></li>
-  <li><a href="#the-second-awesome-thing-about-snakemake" id="toc-the-second-awesome-thing-about-snakemake" class="nav-link" data-scroll-target="#the-second-awesome-thing-about-snakemake"><span class="header-section-number">1.4</span> The second awesome thing about <code>snakemake</code></a></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">1.5</span> Summary</a></li>
+  <li><a href="#the-first-awesome-thing-about-snakemake" id="toc-the-first-awesome-thing-about-snakemake" class="nav-link" data-scroll-target="#the-first-awesome-thing-about-snakemake"><span class="header-section-number">1.5</span> The first awesome thing about <code>snakemake</code></a></li>
+  <li><a href="#the-second-awesome-thing-about-snakemake" id="toc-the-second-awesome-thing-about-snakemake" class="nav-link" data-scroll-target="#the-second-awesome-thing-about-snakemake"><span class="header-section-number">1.6</span> The second awesome thing about <code>snakemake</code></a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">1.7</span> Summary</a></li>
   </ul>
 </nav>
     </div>
@@ -213,29 +215,78 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>In this section we’ll look at making and running a first pipeline and understanding why <code>snakemake</code> is better for you than <code>bash</code> scripts.</p>
 <p>The guidance given here is for using <code>snakemake</code> version <code>9.3</code> and an update from the previous tutorial. Many of the recommendations are not only required but will also provide a robust and reproducible workflow.</p>
-<section id="making-a-snakefile" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="making-a-snakefile"><span class="header-section-number">1.1</span> Making a <code>snakefile</code></h2>
+<section id="singularity" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="singularity"><span class="header-section-number">1.1</span> <code>singularity</code></h2>
+<p>On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like <code>source</code> and <code>singularity</code> images have to be loaded in each job and not globally.</p>
+<p><code>snakemake</code> introduced the ability to run required tools from containers e.g.&nbsp;Docker, Singularity. To enable this function we add the attribute <code>container</code> to the snakefile (which we will explain further below).</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>container: config[<span class="st">"singularity_image"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Where the container location has been defined in the <code>config.yaml</code> (discussed next).</p>
+<p>For each snakemake workflow that is built, there should be a specific <code>singularity</code> container for the required software/tools to carry out the analysis the snakefile defines. To build a container you require a definition file. Often we can use Mamba to install our tools, therefore a template definition file has been written that can be modified for each individual’s needs. This can be located on the HPC at:</p>
+<p><code>/tsl/hpc-scripts/bioinformatics/blank_snake/lib/tools.def</code></p>
+<p>Once the definition file has been modified the container can be built. Note the definition file provide via the <code>blank_snake</code> tutorial can be used as is for this <code>snakemake</code> tutorial.</p>
+<p>To build the container the <code>software</code> node must be used, which can be accessed on the HPC by typing:</p>
+<p><code>software</code></p>
+<p>Once within the <code>software</code> node, navigate to the location with your container definition file and type:</p>
+<pre><code>sudo singularity build tools.sif tools.def</code></pre>
+<p>It is the path to the <code>tools.sif</code> that will be added to the <code>config.yaml</code> to be used by <code>snakemake</code>.</p>
+</section>
+<section id="configuration" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="configuration"><span class="header-section-number">1.2</span> Configuration</h2>
+<p>Before we begin, we need to setup our configuration file for <code>run_workflow.py</code> to utilise. The configuration file or <code>config.yaml</code> stores information that we will want to use throughout our snakemake workflow e.g.&nbsp;results directory, wckey information etc. We will discuss the benefits of this file in more detail later. For now we will just configure it to begin our work.</p>
+<p>Within your project directory you will have <code>./lib/config.yaml</code>, open this using your screen-based text editor of choice e.g.&nbsp;<code>nano</code>, <code>vim</code> etc.</p>
+<pre><code>## Configuration for the pipeline
+
+## Path to your scratch, 
+scratch: "/tsl/scratch/username"
+## Directory in scratch to store the results
+workdir: "directory_in_scratch"
+
+## Path to the singularity image to use
+singularity_image: "tools.sif"
+
+## Path to your SLURM parameters
+profile_dir: "./profiles"
+
+## Your HPC allocation key
+wckey: "your_wckey"  # Your HPC allocation key
+
+## The partition to use for the main snakemake job
+main_job_partition: "tsl_short"
+
+## any additional parameters to pass to snakemake
+some_config_parameter: "your_value"
+</code></pre>
+<p>The parameters we need to update are: <code>scratch</code>, <code>workdir</code>, <code>wckey</code> and <code>main_job_partition</code>. Note for <code>scratch</code> it is required you give the full path and for <code>workdir</code> you can just give the directory name located within <code>scratch</code>.</p>
+<pre><code>scratch: "/tsl/scratch/username/path/to/directory"
+workdir: "directory_name"</code></pre>
+<p>Once <code>config.yaml</code> has been updated we can begin working with <code>snakemake</code>.</p>
+</section>
+<section id="making-a-snakefile" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="making-a-snakefile"><span class="header-section-number">1.3</span> Making a <code>snakefile</code></h2>
+<p>Excellent, now we have all the required containers and configurations sorted we can begin learning about <code>snakemake</code> and creating our first snakefile.</p>
 <p><code>snakemake</code> is intended to replace the mess of <code>bash</code> scripts you use to run your workflows. So let’s look at converting a simple <code>bash</code> script to <code>snakemake</code></p>
 <pre><code>minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | \
 samtools view -S -h -b -q 25 -f 3 &gt; aln.bam
 samtools sort aln.bam -o aln.sorted.bam</code></pre>
 <p>The two commands convert into the following <code>snakemake</code> rules</p>
-<div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here are the key points</p>
 <ol type="1">
@@ -246,11 +297,12 @@ samtools sort aln.bam -o aln.sorted.bam</code></pre>
 </ol>
 <p>That is the basis of it!</p>
 </section>
-<section id="running-the-pipeline" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="running-the-pipeline"><span class="header-section-number">1.2</span> Running the pipeline</h2>
+<section id="running-the-pipeline" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="running-the-pipeline"><span class="header-section-number">1.4</span> Running the pipeline</h2>
 <p>We run the rules by putting them in a file. Usually this is suffixed with <code>.snakefile</code> or <code>.smk</code> to give something like <code>my_pipeline.snakefile</code> or <code>my_pipeline.smk</code>. When we come to run the pipeline <code>snakemake</code> needs us to tell it the name of the rule to run (recall our base rule is <code>final_alignments</code> ), and the snakefile and the cores the pipeline is allowed to use with the <code>-c flag</code>.</p>
-<section id="the-dry-run" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="the-dry-run"><span class="header-section-number">1.2.1</span> The dry-run</h3>
+<p>To generate the snakefile for this tutorial, modify the file <code>./src/workflow.smk</code> removing everything below <strong>line 18</strong> e.g.&nbsp;from the line above “# Define parameters via a config file if needed”. Once you have removed those lines you can add in the snakemake rules defined above.</p>
+<section id="the-dry-run" class="level3" data-number="1.4.1">
+<h3 data-number="1.4.1" class="anchored" data-anchor-id="the-dry-run"><span class="header-section-number">1.4.1</span> The dry-run</h3>
 <p>Usually we don’t want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake <code>-n</code> flag creates a dry-run. Put together that makes something like</p>
 <p>Remember to use snakemake you need to activate the Mamba environment (which you created during the setup described on the previous page). To do so type:</p>
 <pre><code>source activate /path/to/snakemake_environment
@@ -259,7 +311,7 @@ samtools sort aln.bam -o aln.sorted.bam</code></pre>
 <pre><code>./src/run_workflow.py --dry-run
 </code></pre>
 <p>This will produce the following output:</p>
-<pre><code>Running command: sbatch --partition tsl-long --wckey wckey -J snakemake_9.3 --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
+<pre><code>Running command: sbatch --partition tsl-long --wckey wckey -J workingdir --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
 Submitted batch job 13329947
 </code></pre>
 <p>We get a lot of output, which can be found within the slurm-XXXXXX.out file, which can be viewed using your screen-based text editor of choice e.g.&nbsp;<code>nano</code>, <code>vim</code> etc.</p>
@@ -270,8 +322,8 @@ Submitted batch job 13329947
 <li>The Jobs</li>
 <li>The to-be-done list</li>
 </ol>
-<section id="the-summary" class="level4" data-number="1.2.1.1">
-<h4 data-number="1.2.1.1" class="anchored" data-anchor-id="the-summary"><span class="header-section-number">1.2.1.1</span> The Summary</h4>
+<section id="the-summary" class="level4" data-number="1.4.1.1">
+<h4 data-number="1.4.1.1" class="anchored" data-anchor-id="the-summary"><span class="header-section-number">1.4.1.1</span> The Summary</h4>
 <p>At the top of the file we are given a summary of the number of times each rule will be run and the resources specified (here just the defaults)</p>
 <pre><code>Building DAG of jobs...
 Job stats:
@@ -282,8 +334,8 @@ final_alignments        1              1              1
 sort                    1              1              1
 total                   3              1              1</code></pre>
 </section>
-<section id="the-jobs" class="level4" data-number="1.2.1.2">
-<h4 data-number="1.2.1.2" class="anchored" data-anchor-id="the-jobs"><span class="header-section-number">1.2.1.2</span> The Jobs</h4>
+<section id="the-jobs" class="level4" data-number="1.4.1.2">
+<h4 data-number="1.4.1.2" class="anchored" data-anchor-id="the-jobs"><span class="header-section-number">1.4.1.2</span> The Jobs</h4>
 <p>Next we get a much more granular view, each job is presented with the expected input and output and a reason why it needs running. Usually this will be either <code>missing output files</code> i.e.&nbsp;the output hasn’t been created so the job still needs to run or <code>Input files updated by another job</code> meaning that an input file is newer than an output file (or when it is created it will be) so this file needs updating.</p>
 <pre><code>[Wed Oct 26 16:51:18 2022]
 rule align_and_bam:
@@ -310,8 +362,8 @@ localrule final_alignments:
     reason: Input files updated by another job: aln.sorted.bam
     resources: tmpdir=/var/folders/22/kjdvv_k14cj1m6hq5hl527qw0006zc/T</code></pre>
 </section>
-<section id="the-to-be-done-list" class="level4" data-number="1.2.1.3">
-<h4 data-number="1.2.1.3" class="anchored" data-anchor-id="the-to-be-done-list"><span class="header-section-number">1.2.1.3</span> The to-be-done list</h4>
+<section id="the-to-be-done-list" class="level4" data-number="1.4.1.3">
+<h4 data-number="1.4.1.3" class="anchored" data-anchor-id="the-to-be-done-list"><span class="header-section-number">1.4.1.3</span> The to-be-done list</h4>
 <p>This is a version of the summary outlining the bits of the pipeline that need to complete for everything to be in order.</p>
 <pre><code>Job stats:
 job                 count    min threads    max threads
@@ -331,8 +383,8 @@ Reasons:
 This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.</code></pre>
 </section>
 </section>
-<section id="the-run-proper" class="level3" data-number="1.2.2">
-<h3 data-number="1.2.2" class="anchored" data-anchor-id="the-run-proper"><span class="header-section-number">1.2.2</span> The Run Proper</h3>
+<section id="the-run-proper" class="level3" data-number="1.4.2">
+<h3 data-number="1.4.2" class="anchored" data-anchor-id="the-run-proper"><span class="header-section-number">1.4.2</span> The Run Proper</h3>
 <p>Everything looks good in the dry-run so let’s go ahead and run. Although we haven’t made explicit point of it, this run will happen in the current directory with all files expected to be in and going to the current directory. That looks like this at the moment.</p>
 <pre><code>$ ls -l
 total 85136
@@ -355,8 +407,8 @@ total 85136
 <p>All the files we expected to be created have been and are sitting nicely in the directory. Hurray!</p>
 </section>
 </section>
-<section id="the-first-awesome-thing-about-snakemake" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="the-first-awesome-thing-about-snakemake"><span class="header-section-number">1.3</span> The first awesome thing about <code>snakemake</code></h2>
+<section id="the-first-awesome-thing-about-snakemake" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="the-first-awesome-thing-about-snakemake"><span class="header-section-number">1.5</span> The first awesome thing about <code>snakemake</code></h2>
 <p>So far this has all been very much like a bash script. The <code>snakemake</code> file seems to be just an elaborate reproduction. Now lets have a look at a killer feature that makes <code>snakemake</code> very much more useful than bash scripts - its ability to work out whether all parts of the pipeline are up to date and whether anything needs redoing.</p>
 <p>Let’s look at the dry-run output from the pipeline we just ran.</p>
 <pre><code>$ ./src/run_workflow.py --dry-run
@@ -365,20 +417,11 @@ Submitted batch job 13331525</code></pre>
 <p>If we examine our slurm-XXXXXX.out then we will obtain the following:</p>
 <pre><code>nano slurm-13331525.out
 
-Using workflow specific profile profiles for setting default command line arguments.
-host: t384n18
+Using workflow specific profile ./profiles for setting default command line arguments.
+host: t384n8
 Building DAG of jobs...
-Job stats:
-job  count
------  -------
-total        0
-
-Job stats:
-job  count
------  -------
-total        0
-
-This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.</code></pre>
+Nothing to be done (all requested files are present and up to date).
+</code></pre>
 <p>Well, that’s reassuring. Nothing need be done. What if a component file changed. Lets look at what happens if an input file is updated. Using <code>touch</code> to update the timestamp on the reference file</p>
 <pre><code>$ sample_data touch ecoli_genome.fa
 $ sample_data ls -l
@@ -415,46 +458,46 @@ Note
 </div>
 </div>
 </section>
-<section id="the-second-awesome-thing-about-snakemake" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="the-second-awesome-thing-about-snakemake"><span class="header-section-number">1.4</span> The second awesome thing about <code>snakemake</code></h2>
+<section id="the-second-awesome-thing-about-snakemake" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="the-second-awesome-thing-about-snakemake"><span class="header-section-number">1.6</span> The second awesome thing about <code>snakemake</code></h2>
 <p>The next life improving thing about <code>snakemake</code> is how it handles files. Up to now we’ve hardcoded the file names into the rules. That’s not scalable. <code>snakemake</code> provides a clever pattern match facility between the input and output files to match them up between the rules, it cross-references these with actual filenames and fills in the patterns. It provides access to them using special objects called <code>wildcards</code>, <code>input</code> and <code>output</code>. All we need to do is specify the patterns in our rules and the inputs to the master rule (ie <code>final_alignments</code>). In essence, we start by describing the files we want to get out of the pipeline and <code>snakemake</code> works back from there according to our pattern.</p>
 <p>This is massively easier to see in the rules themselves. Here’s our original set of rules.</p>
-<div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>And here’s our new set of rules</p>
-<div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: </span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    ecoli<span class="op">=</span><span class="st">'ecoli.sorted.bam'</span>,</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    pputida<span class="op">=</span><span class="st">'pputida.sorted.bam'</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">.sorted.bam"</span></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_left_R1.fq"</span>,</span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_right_R2.fq"</span>,</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    ecoli<span class="op">=</span><span class="st">'ecoli.sorted.bam'</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    pputida<span class="op">=</span><span class="st">'pputida.sorted.bam'</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">.sorted.bam"</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_left_R1.fq"</span>,</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_right_R2.fq"</span>,</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Things to note:</p>
 <ol type="1">
@@ -504,8 +547,8 @@ Reasons:
 </div>
 </div>
 </section>
-<section id="summary" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="summary"><span class="header-section-number">1.5</span> Summary</h2>
+<section id="summary" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="summary"><span class="header-section-number">1.7</span> Summary</h2>
 <p>We’ve seen how the fundamentals of <code>snakemake</code> allow us to build efficient and reproducible pipelines. In the next section we’ll look at features of <code>snakemake</code> that help to power larger and more complex pipelines.</p>
 
 

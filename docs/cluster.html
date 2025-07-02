@@ -186,12 +186,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#dynamic-parameter-setting" id="toc-dynamic-parameter-setting" class="nav-link" data-scroll-target="#dynamic-parameter-setting"><span class="header-section-number">3.2.2</span> Dynamic parameter setting</a></li>
   <li><a href="#using-resources-to-set-slurm-job-options" id="toc-using-resources-to-set-slurm-job-options" class="nav-link" data-scroll-target="#using-resources-to-set-slurm-job-options"><span class="header-section-number">3.2.3</span> Using <code>resources</code> to set <code>slurm</code> job options</a></li>
   </ul></li>
-  <li><a href="#singularity" id="toc-singularity" class="nav-link" data-scroll-target="#singularity"><span class="header-section-number">3.3</span> <code>singularity</code></a></li>
-  <li><a href="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" id="toc-using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" class="nav-link" data-scroll-target="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths"><span class="header-section-number">3.4</span> Using a file-of-files as a database for mapping wildcards to filesystem paths</a></li>
-  <li><a href="#assigning-the-maximum-number-of-parallel-jobs" id="toc-assigning-the-maximum-number-of-parallel-jobs" class="nav-link" data-scroll-target="#assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.5</span> Assigning the maximum number of parallel jobs</a></li>
-  <li><a href="#waiting-for-the-filesystem-to-catch-up" id="toc-waiting-for-the-filesystem-to-catch-up" class="nav-link" data-scroll-target="#waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.6</span> Waiting for the filesystem to catch up</a></li>
-  <li><a href="#unlocking-a-crashed-process" id="toc-unlocking-a-crashed-process" class="nav-link" data-scroll-target="#unlocking-a-crashed-process"><span class="header-section-number">3.7</span> Unlocking a crashed process</a></li>
-  <li><a href="#organising-the-snakemake-bits-and-pieces" id="toc-organising-the-snakemake-bits-and-pieces" class="nav-link" data-scroll-target="#organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.8</span> Organising the <code>snakemake</code> bits and pieces</a></li>
+  <li><a href="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" id="toc-using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" class="nav-link" data-scroll-target="#using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths"><span class="header-section-number">3.3</span> Using a file-of-files as a database for mapping wildcards to filesystem paths</a></li>
+  <li><a href="#assigning-the-maximum-number-of-parallel-jobs" id="toc-assigning-the-maximum-number-of-parallel-jobs" class="nav-link" data-scroll-target="#assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.4</span> Assigning the maximum number of parallel jobs</a></li>
+  <li><a href="#waiting-for-the-filesystem-to-catch-up" id="toc-waiting-for-the-filesystem-to-catch-up" class="nav-link" data-scroll-target="#waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.5</span> Waiting for the filesystem to catch up</a></li>
+  <li><a href="#unlocking-a-crashed-process" id="toc-unlocking-a-crashed-process" class="nav-link" data-scroll-target="#unlocking-a-crashed-process"><span class="header-section-number">3.6</span> Unlocking a crashed process</a></li>
+  <li><a href="#organising-the-snakemake-bits-and-pieces" id="toc-organising-the-snakemake-bits-and-pieces" class="nav-link" data-scroll-target="#organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.7</span> Organising the <code>snakemake</code> bits and pieces</a></li>
   </ul>
 </nav>
     </div>
@@ -237,7 +236,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>),</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>),</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  params:</span>
@@ -257,7 +256,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>),</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>),</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  params:</span>
@@ -305,7 +304,7 @@ set-threads:
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  threads: <span class="dv">8</span></span>
@@ -324,24 +323,8 @@ set-threads:
 </div>
 </section>
 </section>
-<section id="singularity" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="singularity"><span class="header-section-number">3.3</span> <code>singularity</code></h2>
-<p>On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like <code>source</code> and <code>singularity</code> images have to be loaded in each job and not globally.</p>
-<p><code>snakemake</code> introduced the ability to run required tools from containers e.g.&nbsp;Docker, Singularity. To enable this function we add the attribute <code>container</code> to the snakefile.</p>
-<div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>container: config[<span class="st">"singularity_image"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Where the container location has been defined in the <code>config.yaml</code>.</p>
-<p>For each snakemake workflow that is built, there should be a specific <code>singularity</code> container for the required software/tools to carry out the analysis the snakefile defines. To build a container you require a defintion file. Often we can use Mamba to install our tools, therefore a template definition file has been written that can be modified for each individuals needs. This can be located on the HPC at:</p>
-<p><code>/tsl/hpc-scripts/bioinformatics/blank_snake/lib/tools.def</code></p>
-<p>Once the defintion file has been modified the container can be built. To build the container the <code>software</code> node must be used, which can be accessed on the HPC by typing:</p>
-<p><code>software</code></p>
-<p>Once within the <code>software</code> node, navigate to the location with your container definition file and type:</p>
-<pre><code>sudo singularity build tools.sif tools.def</code></pre>
-<p>It is the path to the <code>tools.sif</code> that will be added to the <code>config.yaml</code> to be used by <code>snakemake</code>.</p>
-</section>
-<section id="using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths"><span class="header-section-number">3.4</span> Using a file-of-files as a database for mapping wildcards to filesystem paths</h2>
+<section id="using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="using-a-file-of-files-as-a-database-for-mapping-wildcards-to-filesystem-paths"><span class="header-section-number">3.3</span> Using a file-of-files as a database for mapping wildcards to filesystem paths</h2>
 <p>Often we will want to use filenames that have no indication of our sample name or other wildcards in them. This might be because they are raw datafiles from sequencing providers and we don’t want to change the filenames or copy the large files across the filesystem from a central storage. Because we are able to use <code>lambda</code> functions in <code>snakemake</code> and any old Python we can make a database of mappings between the wildcard names and other things like filepaths in a csv file, and read it in for use at any time we like.</p>
 <p>Consider the following sample file (name <code>sample_info.csv</code>)</p>
 <pre><code>sample, fq1_path, fq2_path, treatment, time
@@ -349,60 +332,60 @@ pputida, /my/seq/db/pputida_1.fq, /my/seq/db/pputida_2.fq, test, 0h
 ecoli, /my/seq/db/ecoli_mega_R1.fastq.gz, /my/seq/db/ecol_mega_R2_fastq.gz, control, 6h
 ...</code></pre>
 <p>Note that the file names don’t have a common pattern, so won’t easily be resolved by <code>snakemake</code> wildcards. Instead we can build lists of the columns by parsing the file in a usual Python way at the top of the <code>snakemake</code> file</p>
-<div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> []</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>fq1 <span class="op">=</span> []</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fq2 <span class="op">=</span> []</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> []</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> []</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"sample_info.csv"</span>) <span class="im">as</span> csv:</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> l <span class="kw">in</span> csv:</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        l <span class="op">=</span> l.rstrip(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> l.startswith(<span class="st">"sample"</span>):</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            els <span class="op">=</span> l.split(<span class="st">","</span>)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            samples.append( els[<span class="dv">0</span>] )</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            fq1.append( els[<span class="dv">1</span>] )</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            fq2.append( els[<span class="dv">2</span>] )</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            times.append( els[<span class="dv">3</span>] )</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>            treatments.append( els[<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> []</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>fq1 <span class="op">=</span> []</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>fq2 <span class="op">=</span> []</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> []</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> []</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"sample_info.csv"</span>) <span class="im">as</span> csv:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> l <span class="kw">in</span> csv:</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        l <span class="op">=</span> l.rstrip(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> l.startswith(<span class="st">"sample"</span>):</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>            els <span class="op">=</span> l.split(<span class="st">","</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>            samples.append( els[<span class="dv">0</span>] )</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            fq1.append( els[<span class="dv">1</span>] )</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>            fq2.append( els[<span class="dv">2</span>] )</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            times.append( els[<span class="dv">3</span>] )</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>            treatments.append( els[<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can generate functions that given a <code>sample</code> will return the other items e.g <code>fq</code></p>
-<div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_to_read(sample, samples, fq):</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">'''given a sample and list of samples and a list of fqs returns the fq with the same index</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">as the sample'''</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fq[samples.index(sample)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_to_read(sample, samples, fq):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">'''given a sample and list of samples and a list of fqs returns the fq with the same index</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">as the sample'''</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fq[samples.index(sample)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So now we can use the wildcard to get back the fq file in the <code>lambda</code> function in the rule like this</p>
-<div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: sample_to_read(wildcards.sample, samples, fq1)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: saample_to_read(wildcards.sample, samples, fq2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: sample_to_read(wildcards.sample, samples, fq1)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: saample_to_read(wildcards.sample, samples, fq2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Which returns the full filesystem path for each fq based on the <code>sample</code> wildcard.</p>
 <p>This is a really useful feature, but it can be tempting to think of it as a solution to everything. Try to use it only for files that come <em>into</em> the <code>snakemake</code> pipeline at the beginning and not for things that are generated internally or for final outputs.</p>
 </section>
-<section id="assigning-the-maximum-number-of-parallel-jobs" class="level2" data-number="3.5">
-<h2 data-number="3.5" class="anchored" data-anchor-id="assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.5</span> Assigning the maximum number of parallel jobs</h2>
+<section id="assigning-the-maximum-number-of-parallel-jobs" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.4</span> Assigning the maximum number of parallel jobs</h2>
 <p>You can limit the number of jobs that will run concurrently and it is recommended to use the <code>workflow_profile</code> to do this.</p>
 <p><code>jobs: 100</code></p>
 <p><code>snakemake</code> will not allow more than the specified number of jobs into the queue at any one time. It will manage the submission of jobs right until the completion of the pipeline whatever value you choose. It doesn’t create any extra work for you, just throttles <code>snakemake</code> should you require it.</p>
 </section>
-<section id="waiting-for-the-filesystem-to-catch-up" class="level2" data-number="3.6">
-<h2 data-number="3.6" class="anchored" data-anchor-id="waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.6</span> Waiting for the filesystem to catch up</h2>
+<section id="waiting-for-the-filesystem-to-catch-up" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.5</span> Waiting for the filesystem to catch up</h2>
 <p>In a HPC environment we sometimes have to wait for processes to finish writing to disk. These operation can be considered complete by the operating system but still need writing or the filesystem fully updated. So if a new process in a pipeline can’t find the output its expecting from a finished process becauce the filesystem is behind, the whole thing could fall over. To avoid this we can set a latency time in which the <code>snakemake</code> process will wait and keep checking for the file to arrive before crashing out. Ususally 60 seconds is fine. This can be set again using the <code>workflow_profile</code> under:</p>
 <p><code>latency-wait: 60</code></p>
 <p>As with specifying the number of parallel jobs, it is recommended to set these values using this method.</p>
 </section>
-<section id="unlocking-a-crashed-process" class="level2" data-number="3.7">
-<h2 data-number="3.7" class="anchored" data-anchor-id="unlocking-a-crashed-process"><span class="header-section-number">3.7</span> Unlocking a crashed process</h2>
+<section id="unlocking-a-crashed-process" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="unlocking-a-crashed-process"><span class="header-section-number">3.6</span> Unlocking a crashed process</h2>
 <p>Occasionally the <code>snakemake</code> pipeline will crash, often because one of its dependent jobs has failed to complete properly (perhaps it ran out of memory). In this state <code>snakemake</code> will become locked, to prevent further corruption of the pipeline. The next step is for you to check the logs to see what went wrong and manually resolve it. Then (and only then) can you unlock the <code>snakemake</code> pipeline and restart it. Thankfully, <code>snakemake</code> will pick up from where it left off, so no earlier progress will be lost.</p>
 <p>You can unlock with the <code>snakemake</code> option <code>--unlock</code>, e.g</p>
 <pre><code>snakemake --snakefile my_pipeline.snakefile --unlock</code></pre>
 </section>
-<section id="organising-the-snakemake-bits-and-pieces" class="level2" data-number="3.8">
-<h2 data-number="3.8" class="anchored" data-anchor-id="organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.8</span> Organising the <code>snakemake</code> bits and pieces</h2>
+<section id="organising-the-snakemake-bits-and-pieces" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.7</span> Organising the <code>snakemake</code> bits and pieces</h2>
 <p>During the setup steps outlined in the <a href="./index.html">Preface</a> there is guidance provided for generating your Project Structure. Following this structure will help organise the required files. Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the <code>config file</code> section. Then consider the top level directory as the base for executing everything. If using the project structure outlined in the <a href="./index.html">Preface</a> then it will look like this</p>
 <pre><code>$ pwd 
 my_pipeline 
@@ -465,6 +448,7 @@ singularity_image: "tools.sif"     ## Path to the singularity image to use
 wckey: "your_wckey"     ## Your HPC allocation key
 main_job_partition: "tsl_short"     ## The partition to use for the main snakemake job
 some_config_parameter: "your_value"     ## any additional parameters to pass to snakemake</code></pre>
+<p>This is the most important step before beginning working with our <code>snakemake</code> pipeline.</p>
 
 
 </section>

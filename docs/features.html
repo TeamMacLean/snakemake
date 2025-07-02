@@ -180,7 +180,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#the-expand-function" id="toc-the-expand-function" class="nav-link active" data-scroll-target="#the-expand-function"><span class="header-section-number">2.1</span> The <code>expand()</code> function</a></li>
-  <li><a href="#the-config.yml-file" id="toc-the-config.yml-file" class="nav-link" data-scroll-target="#the-config.yml-file"><span class="header-section-number">2.2</span> The <code>config.yml</code> file</a></li>
+  <li><a href="#the-config.yaml-file" id="toc-the-config.yaml-file" class="nav-link" data-scroll-target="#the-config.yaml-file"><span class="header-section-number">2.2</span> The <code>config.yaml</code> file</a></li>
   <li><a href="#lambda-functions" id="toc-lambda-functions" class="nav-link" data-scroll-target="#lambda-functions"><span class="header-section-number">2.3</span> <code>lambda</code> functions</a></li>
   <li><a href="#logging-specific-steps" id="toc-logging-specific-steps" class="nav-link" data-scroll-target="#logging-specific-steps"><span class="header-section-number">2.4</span> Logging specific steps</a></li>
   <li><a href="#rerunning-a-specific-step" id="toc-rerunning-a-specific-step" class="nav-link" data-scroll-target="#rerunning-a-specific-step"><span class="header-section-number">2.5</span> Rerunning a specific step</a></li>
@@ -232,51 +232,69 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>which will create all the combinations of those lists.</p>
 </section>
-<section id="the-config.yml-file" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="the-config.yml-file"><span class="header-section-number">2.2</span> The <code>config.yml</code> file</h2>
+<section id="the-config.yaml-file" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="the-config.yaml-file"><span class="header-section-number">2.2</span> The <code>config.yaml</code> file</h2>
 <p>We won’t often have all our files in the current directory, nor want our results and intermediate files to go there, they’ll usually be spread about the filesystem. Which means we will have to start dealing with varied paths. Recall that <code>snakemake</code> <em>is</em> Python. This means that we can create paths using standard Python functions, like <code>os.path.join()</code>. This is most useful when combined with a <code>config.yaml</code> file which looks something like this</p>
 <pre><code>scratch: "/path/to/a/scratch/folder/"
 databases: "/path/to/a/database/folder/"
 results: "/path/to/a/results/folder"</code></pre>
-<p>These paths make up a base set of paths that we may want to write or read from in our rules. When loaded into the snakefile a Python <code>dict</code> object called <code>config</code> is created that we can access using the keys named in <code>config.yaml</code>.</p>
-<p>Here’s an example:</p>
+<p>These paths make up a base set of paths that we may want to write or read from in our rules. When loaded into the snakefile a Python <code>dict</code> object called <code>config</code> is created that we can access using the keys named in <code>config.yaml</code>. To point <code>snakemake</code> to the <code>config.yaml</code> we need to have the following within our snakefile:</p>
+<pre><code>configfile: "path/to/config.yaml"</code></pre>
+<p>As we are using a template <code>config.yaml</code> this has already been defined with the <code>config.yaml</code> located within <code>lib/config.yaml</code>.</p>
+<p>Remember from our <code>config.yaml</code> we have the following:</p>
+<pre><code>scratch: "/tsl/scratch/username"
+workdir: "directory_in_scratch"
+singularity_image: "tools.sif"
+profile_dir: "./profiles"
+wckey: "your_wckey"
+some_config_parameter: "your_value"</code></pre>
+<p>As we move through the tutorial we will provide examples of how they apply to our snakemake workflow.</p>
+<p>Here’s an example using our <code>scratch</code>, <code>workdir</code> and <code>some_config_parameter</code> which has been defined here as <code>database</code>:</p>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> [<span class="st">'ecoli'</span>, <span class="st">'pputida'</span>]</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>timepoints <span class="op">=</span> [<span class="st">'0h'</span>, <span class="st">'2h'</span>]</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> [<span class="st">'test'</span>, <span class="st">'control'</span>]</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>configfile: <span class="st">"config.yml"</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>RESULTS_DIR <span class="op">=</span> config[<span class="st">"results"</span>]</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>SCRATCH_DIR <span class="op">=</span> config[<span class="st">"scratch"</span>]</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>DATABASE_DIR <span class="op">=</span> config[<span class="st">"databases"</span>]</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: expand(os.path.join(RESULTS_DIR,  <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>, sample<span class="op">=</span>samples, time<span class="op">=</span>timepoints, treatment<span class="op">=</span>treatments))</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(RESULTS_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_left_R1.fq"</span>,</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_right_R2.fq"</span>,</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> [<span class="st">'ecoli'</span>, <span class="st">'pputida'</span>]</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>timepoints <span class="op">=</span> [<span class="st">'0h'</span>, <span class="st">'2h'</span>]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> [<span class="st">'test'</span>, <span class="st">'control'</span>]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Note OUTPUT_DIR is already defined in the snakefile provided</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>OUTPUT_DIR <span class="op">=</span> os.path.join(config[<span class="st">"scratch"</span>, config[<span class="st">"workdir"</span>])</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>SCRATCH_DIR <span class="op">=</span> config[<span class="st">"scratch"</span>]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>DATABASE_DIR <span class="op">=</span> os.path.join(SCRATCH_DIR, config[<span class="st">"database"</span>])</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: expand(os.path.join(OUTPUT_DIR,  <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>), sample<span class="op">=</span>samples, time<span class="op">=</span>timepoints, treatment<span class="op">=</span>treatments)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(OUTPUT_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span>os.path.join(SCRATCH_DIR,<span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_left_R1.fq"</span>),</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span>os.path.join(SCRATCH_DIR,<span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_right_R2.fq"</span>),</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>It should be easy to see how to load the config file and inject the values into our paths nicely.</p>
+<p>One thing to note, by doing this we need to move our sample data. Up until now this data has been located in our project directory, which isn’t good practice. Examine the snakefile above and determine where you need to move your files to, in order to get the workflow to run as intended.</p>
+<p>Another thing you probably noticed was the use of the parameter <code>database</code> in our snakefile which wasn’t listed in our original <code>config.yaml</code>. To define our own parameters in the <code>config.yaml</code> we can alter the line that reads “some_config_parameter” to be our required parameter. In the example above it is the name of the directory sotring our genome .fa files within our sctratch. To use the <code>database</code> parameter we want to update our <code>config.yaml</code> to reflect the new key name:</p>
+<pre><code>scratch: "/tsl/scratch/username"
+workdir: "directory_in_scratch"
+singularity_image: "tools.sif"
+profile_dir: "./profiles"
+wckey: "your_wckey"
+database: "database"</code></pre>
+<p>After updating <code>config.yaml</code> we can perform a dry-run and check that all our files are being identified as expected.</p>
 </section>
 <section id="lambda-functions" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="lambda-functions"><span class="header-section-number">2.3</span> <code>lambda</code> functions</h2>
 <p>In the <code>config</code> example above it may have been conspicuous that the fastq files were not graced with the information from the config file. This gives us opportunity to explore how to use the wildcard information to get a path using custom functions. For input files, <code>snakemake</code> allows us to use a Python <code>lambda</code> function. These are one line functions that don’t get a name. You can pass them the <code>wildcards</code> object and get them to call a second function that uses that information to generate the pathname for the file. Have a look at this snippet</p>
 <div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The function <code>my_function()</code> <em>must</em> return a single pathname as a string, as it is <em>just</em> Python the function can be defined in the top of the <code>snakemake</code> file or imported. We’ll look at these in more depth later.</p>
 </section>
@@ -285,38 +303,36 @@ results: "/path/to/a/results/folder"</code></pre>
 <p>It is important to generate logs for our snakemake rules and steps within, as this will make troubleshooting easier. To do this you can add the <code>log</code> attribute to each rule. Note it is also required that you add to the shell line after your job commands the following: <code>2&gt; {log}</code></p>
 <p>It is fine to include this even if your output uses <code>&gt;</code> to redirect stdout, as <code>2&gt;</code> redirects stderror.</p>
 <div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> [<span class="st">'ecoli'</span>, <span class="st">'pputida'</span>]</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>timepoints <span class="op">=</span> [<span class="st">'0h'</span>, <span class="st">'2h'</span>]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> [<span class="st">'test'</span>, <span class="st">'control'</span>]</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>configfile: <span class="st">"config.yml"</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>RESULTS_DIR <span class="op">=</span> config[<span class="st">"results"</span>]</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>SCRATCH_DIR <span class="op">=</span> config[<span class="st">"scratch"</span>]</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>DATABASE_DIR <span class="op">=</span> config[<span class="st">"databases"</span>]</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># We add a location to store our logs</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>LOG_DIR <span class="op">=</span> os.path.join(RESULTS_DIR, <span class="st">"logs"</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: expand(os.path.join(RESULTS_DIR,  <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>, sample<span class="op">=</span>samples, time<span class="op">=</span>timepoints, treatment<span class="op">=</span>treatments))</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(RESULTS_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>)</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"sort_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log}</span><span class="st">"</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_left_R1.fq"</span>,</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_right_R2.fq"</span>,</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  log: </span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    minimap<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"minimap_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>),</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> [<span class="st">'ecoli'</span>, <span class="st">'pputida'</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>timepoints <span class="op">=</span> [<span class="st">'0h'</span>, <span class="st">'2h'</span>]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> [<span class="st">'test'</span>, <span class="st">'control'</span>]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>OUTPUT_DIR <span class="op">=</span> config[<span class="st">"workdir"</span>]</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>SCRATCH_DIR <span class="op">=</span> config[<span class="st">"scratch"</span>]</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>DATABASE_DIR <span class="op">=</span> config[<span class="st">"database"</span>]</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># We add a location to store our logs</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>LOG_DIR <span class="op">=</span> os.path.join(OUTPUT_DIR, <span class="st">"logs"</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: expand(os.path.join(OUTPUT_DIR,  <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>), sample<span class="op">=</span>samples, time<span class="op">=</span>timepoints, treatment<span class="op">=</span>treatments)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(OUTPUT_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.sorted.bam"</span>)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"sort_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log}</span><span class="st">"</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span>os.path.join(SCRATCH_DIR,<span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_left_R1.fq"</span>),</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span>os.path.join(SCRATCH_DIR,<span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_right_R2.fq"</span>),</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  output: os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  log: </span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    minimap<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"minimap_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>),</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For snakemake specific logs, you will find a hidden directory with the associated log files within your project directory. These logs can be very helpful for troubleshooting specific rules and associated samples.</p>
 <pre><code>ls -lah .snakemake/slurm_logs/
@@ -335,14 +351,14 @@ drwxrwx---  2 taz23vul TSL_20   0 Jul  1 12:37 rule_sort</code></pre>
 <h2 data-number="2.6" class="anchored" data-anchor-id="deleting-intermediate-files"><span class="header-section-number">2.6</span> Deleting intermediate files</h2>
 <p>Quite often there’s no need to keep anything but the final result file(s). Since we can regenerate intermediate files easily using its rule in the <code>snakefile</code> we can usually just tell <code>snakemake</code> to remove output files when they’re no longer needed by wrapping the path in the <code>temp()</code> function, like this</p>
 <div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This saves as lot of space during runtime for big pipelines <em>and</em> saves a lot of clean up.</p>
 </section>
@@ -350,27 +366,27 @@ drwxrwx---  2 taz23vul TSL_20   0 Jul  1 12:37 rule_sort</code></pre>
 <h2 data-number="2.7" class="anchored" data-anchor-id="more-shell"><span class="header-section-number">2.7</span> More <code>shell</code></h2>
 <p>In all our examples we’ve used a <code>shell</code> line to hold the command. We can make the <code>shell</code> command multi-line by wrapping it in Python triple quotes, enabling us to have longer commands/chains in the snakefile</p>
 <div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | \ samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | \ samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A common alternative that prevents the snakefile from getting gummed up with job specifics is just to put the commands in a bash script and call that. Any script that can be run on the command line can be run this way, including Python, R etc</p>
 <div class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASES_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"bash scripts/do_alignments.sh </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq1"</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"bash scripts/do_alignments.sh </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code>shell:</code> can also be replaced with <code>run:</code> which allows you to use Python directly in the snakefile.</p>
 </section>
@@ -380,7 +396,7 @@ drwxrwx---  2 taz23vul TSL_20   0 Jul  1 12:37 rule_sort</code></pre>
 </section>
 <section id="drawing-the-pipeline" class="level2" data-number="2.9">
 <h2 data-number="2.9" class="anchored" data-anchor-id="drawing-the-pipeline"><span class="header-section-number">2.9</span> Drawing the pipeline</h2>
-<p>It is possible to get <code>snakemake</code> to generate a picture of your pipeline, which is great for understanding when things get complicated or showing your boss how involved these things are. We use the <code>--dag</code> option in conjunction with <code>graphviz</code> (which is installed with the <code>snakemake</code> environment). Our handy running script handles this and outputs the generated picture to your specified {RESULTS_DIR}</p>
+<p>It is possible to get <code>snakemake</code> to generate a picture of your pipeline, which is great for understanding when things get complicated or showing your boss how involved these things are. We use the <code>--dag</code> option in conjunction with <code>graphviz</code> (which is installed with the <code>snakemake</code> environment). Our handy running script handles this and outputs the generated picture to your specified {OUTPUT_DIR}</p>
 <pre><code>./src/run_workflow.py --dag
 </code></pre>
 </section>

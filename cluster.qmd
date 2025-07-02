@@ -27,7 +27,7 @@ rule align_and_bam:
   input:
     fq1=lambda wildcards: my_function(wildcards, "fq1"),
     fq2=lambda wildcards: my_function(wildcards, "fq2"),
-    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+    ref=os.path.join(DATABASE_DIR, "{sample}_genome.fa")
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
   log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   params:
@@ -49,7 +49,7 @@ rule align_and_bam:
   input:
     fq1=lambda wildcards: my_function(wildcards, "fq1"),
     fq2=lambda wildcards: my_function(wildcards, "fq2"),
-    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+    ref=os.path.join(DATABASE_DIR, "{sample}_genome.fa")
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
   log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   params:
@@ -111,7 +111,7 @@ rule align_and_bam:
   input:
     fq1=lambda wildcards: my_function(wildcards, "fq1")
     fq2=lambda wildcards: my_function(wildcards, "fq2")
-    ref=os.path.join(DATABASES_DIR, "{sample}_genome.fa")
+    ref=os.path.join(DATABASE_DIR, "{sample}_genome.fa")
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
   log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   threads: 8
@@ -129,37 +129,6 @@ samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {p
 """
 ```
 
-## `singularity`
-
-On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like `source` and `singularity` images have to be loaded in each job and not globally. 
-
-`snakemake` introduced the ability to run required tools from containers e.g. Docker, Singularity.  To enable this function we add the attribute `container` to the snakefile.
-
-
-```{python}
-#| eval: false
-
-container: config["singularity_image"]
-
-```
-
-Where the container location has been defined in the `config.yaml`.
-
-For each snakemake workflow that is built, there should be a specific `singularity` container for the required software/tools to carry out the analysis the snakefile defines.  To build a container you require a defintion file.  Often we can use Mamba to install our tools, therefore a template definition file has been written that can be modified for each individuals needs.  This can be located on the HPC at:
-
-`/tsl/hpc-scripts/bioinformatics/blank_snake/lib/tools.def`
-
-Once the defintion file has been modified the container can be built.  To build the container the `software` node must be used, which can be accessed on the HPC by typing:
-
-`software`
-
-Once within the `software` node, navigate to the location with your container definition file and type:
-
-```
-sudo singularity build tools.sif tools.def
-```
-
-It is the path to the `tools.sif` that will be added to the `config.yaml` to be used by `snakemake`.
 
 ## Using a file-of-files as a database for mapping wildcards to filesystem paths
 
@@ -329,6 +298,4 @@ main_job_partition: "tsl_short"     ## The partition to use for the main snakema
 some_config_parameter: "your_value"     ## any additional parameters to pass to snakemake
 ```
 
-
-
-
+This is the most important step before beginning working with our `snakemake` pipeline.

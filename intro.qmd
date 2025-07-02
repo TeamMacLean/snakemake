@@ -5,8 +5,81 @@ In this section we'll look at making and running a first pipeline and understand
 
 The guidance given here is for using `snakemake` version `9.3` and an update from the previous tutorial.  Many of the recommendations are not only required but will also provide a robust and reproducible workflow.
 
+## `singularity`
+
+On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like `source` and `singularity` images have to be loaded in each job and not globally. 
+
+`snakemake` introduced the ability to run required tools from containers e.g. Docker, Singularity.  To enable this function we add the attribute `container` to the snakefile (which we will explain further below).
+
+
+```{python}
+#| eval: false
+
+container: config["singularity_image"]
+
+```
+
+Where the container location has been defined in the `config.yaml` (discussed next).
+
+For each snakemake workflow that is built, there should be a specific `singularity` container for the required software/tools to carry out the analysis the snakefile defines.  To build a container you require a definition file.  Often we can use Mamba to install our tools, therefore a template definition file has been written that can be modified for each individual's needs.  This can be located on the HPC at:
+
+`/tsl/hpc-scripts/bioinformatics/blank_snake/lib/tools.def`
+
+Once the definition file has been modified the container can be built. Note the definition file provide via the `blank_snake` tutorial can be used as is for this `snakemake` tutorial.
+
+To build the container the `software` node must be used, which can be accessed on the HPC by typing:
+
+`software`
+
+Once within the `software` node, navigate to the location with your container definition file and type:
+
+```
+sudo singularity build tools.sif tools.def
+```
+
+It is the path to the `tools.sif` that will be added to the `config.yaml` to be used by `snakemake`.
+
+## Configuration
+
+Before we begin, we need to setup our configuration file for `run_workflow.py` to utilise.  The configuration file or `config.yaml` stores information that we will want to use throughout our snakemake workflow e.g. results directory, wckey information etc.  We will discuss the benefits of this file in more detail later. For now we will just configure it to begin our work.
+
+Within your project directory you will have `./lib/config.yaml`, open this using your screen-based text editor of choice e.g. `nano`, `vim` etc.
+
+```
+## Configuration for the pipeline
+
+## Path to your scratch, 
+scratch: "/tsl/scratch/username"
+## Directory in scratch to store the results
+workdir: "directory_in_scratch"
+
+## Path to the singularity image to use
+singularity_image: "tools.sif"
+
+## Path to your SLURM parameters
+profile_dir: "./profiles"
+
+## Your HPC allocation key
+wckey: "your_wckey"  # Your HPC allocation key
+
+## The partition to use for the main snakemake job
+main_job_partition: "tsl_short"
+
+## any additional parameters to pass to snakemake
+some_config_parameter: "your_value"
+
+```
+The parameters we need to update are: `scratch`, `workdir`, `wckey` and `main_job_partition`.  Note for `scratch` it is required you give the full path and for `workdir` you can just give the directory name located within `scratch`.
+
+```
+scratch: "/tsl/scratch/username/path/to/directory"
+workdir: "directory_name"
+```
+Once `config.yaml` has been updated we can begin working with `snakemake`.
 
 ## Making a `snakefile`
+
+Excellent, now we have all the required containers and configurations sorted we can begin learning about `snakemake` and creating our first snakefile.
 
 `snakemake` is intended to replace the mess of `bash` scripts you use to run your workflows. So let's look at converting a simple `bash` script to `snakemake`
 
@@ -49,7 +122,9 @@ That is the basis of it!
 
 ## Running the pipeline
 
-We run the rules by putting them in a file. Usually this is suffixed with `.snakefile` or `.smk` to give something like `my_pipeline.snakefile` or `my_pipeline.smk`. When we come to run the pipeline `snakemake` needs us to tell it the name of the rule to run (recall our base rule is `final_alignments` ), and the snakefile and the cores the pipeline is allowed to use with the `-c flag`. 
+We run the rules by putting them in a file. Usually this is suffixed with `.snakefile` or `.smk` to give something like `my_pipeline.snakefile` or `my_pipeline.smk`. When we come to run the pipeline `snakemake` needs us to tell it the name of the rule to run (recall our base rule is `final_alignments` ), and the snakefile and the cores the pipeline is allowed to use with the `-c flag`.
+
+To generate the snakefile for this tutorial, modify the file `./src/workflow.smk` removing everything below __line 18__ e.g. from the line above "# Define parameters via a config file if needed".  Once you have removed those lines you can add in the snakemake rules defined above.
 
 
 ### The dry-run
@@ -71,7 +146,7 @@ However, as we are using `run_workflow.py` this step is unnecessary as it will s
 This will produce the following output:
 
 ```
-Running command: sbatch --partition tsl-long --wckey wckey -J snakemake_9.3 --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
+Running command: sbatch --partition tsl-long --wckey wckey -J workingdir --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
 Submitted batch job 13329947
 
 ```
@@ -213,20 +288,11 @@ If we examine our slurm-XXXXXX.out then we will obtain the following:
 ```
 nano slurm-13331525.out
 
-Using workflow specific profile profiles for setting default command line arguments.
-host: t384n18
+Using workflow specific profile ./profiles for setting default command line arguments.
+host: t384n8
 Building DAG of jobs...
-Job stats:
-job	 count
------  -------
-total        0
+Nothing to be done (all requested files are present and up to date).
 
-Job stats:
-job	 count
------  -------
-total        0
-
-This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
 ```
 
 Well, that's reassuring. Nothing need be done. What if a component file changed. Lets look at what happens if an input file is updated. Using `touch` to update the timestamp on the reference file
