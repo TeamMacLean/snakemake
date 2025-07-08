@@ -190,7 +190,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#assigning-the-maximum-number-of-parallel-jobs" id="toc-assigning-the-maximum-number-of-parallel-jobs" class="nav-link" data-scroll-target="#assigning-the-maximum-number-of-parallel-jobs"><span class="header-section-number">3.4</span> Assigning the maximum number of parallel jobs</a></li>
   <li><a href="#waiting-for-the-filesystem-to-catch-up" id="toc-waiting-for-the-filesystem-to-catch-up" class="nav-link" data-scroll-target="#waiting-for-the-filesystem-to-catch-up"><span class="header-section-number">3.5</span> Waiting for the filesystem to catch up</a></li>
   <li><a href="#unlocking-a-crashed-process" id="toc-unlocking-a-crashed-process" class="nav-link" data-scroll-target="#unlocking-a-crashed-process"><span class="header-section-number">3.6</span> Unlocking a crashed process</a></li>
-  <li><a href="#organising-the-snakemake-bits-and-pieces" id="toc-organising-the-snakemake-bits-and-pieces" class="nav-link" data-scroll-target="#organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.7</span> Organising the <code>snakemake</code> bits and pieces</a></li>
+  <li><a href="#understanding-run_workflow.py" id="toc-understanding-run_workflow.py" class="nav-link" data-scroll-target="#understanding-run_workflow.py"><span class="header-section-number">3.7</span> Understanding <code>run_workflow.py</code></a></li>
+  <li><a href="#organising-the-snakemake-bits-and-pieces" id="toc-organising-the-snakemake-bits-and-pieces" class="nav-link" data-scroll-target="#organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.8</span> Organising the <code>snakemake</code> bits and pieces</a></li>
   </ul>
 </nav>
     </div>
@@ -238,14 +239,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>),</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  params:</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  log: </span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    minimap<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"minimap_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  params:</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="dynamic-parameter-setting" class="level3" data-number="3.2.2">
@@ -258,15 +261,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>),</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  params:</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  log: </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    minimap<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"minimap_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  params:</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note the value at <code>params</code> can be additional files, output directories not required for downstream jobs and can be assigned from the <code>config.yaml</code>.</p>
 </section>
@@ -295,10 +300,10 @@ set-threads:
 </code></pre>
 <p>Many of the parameters outlined above are self explanatory but note the options to provide default resources and threads. This can be helpful if a number of your rules use similar settings.</p>
 <p>To run <code>snakemake</code> with a profile file, see below</p>
-<pre><code>snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile config.v9+.yaml</code></pre>
-<p>Not that this workflow profile needs to be named “config.v9+.yaml” in order for snakemake to recognise it as a profile and utilise the defaults as expected.</p>
+<pre><code>snakemake --snakefile src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles</code></pre>
+<p>Where <code>profiles</code> is a directory containing your workflow profile, which needs to be named “config.v9+.yaml” in order for snakemake to recognise it as a profile and utilise the defaults as expected.</p>
 <p>If a user wishes to provide specific <code>slurm</code> resources for a certain rule, then this can be provided by using the <code>resources</code> attribute. In practice this means that the job associated with a rule will get its own specific value of <code>mem</code>, <code>partition</code> and any other <code>slurm</code> options, from its <code>resources</code> block, allowing the user to specify the value as needed.</p>
-<p>Below is an example of using the <code>resources</code> attribute to assign <code>mem</code>, <code>partition</code> and <code>wc-key</code> (the value of which is located in the <code>config.yaml</code>). Note when assigning the number of cores (threads), then the attribute <code>threads</code> is used.</p>
+<p>Below is an example of using the <code>resources</code> attribute to assign <code>mem</code>, <code>slurm_partition</code> and <code>wc-key</code> (the value of which is located in the <code>config.yaml</code>). Note when assigning the number of cores (threads), then the attribute <code>threads</code> is used.</p>
 <div class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
@@ -306,20 +311,30 @@ set-threads:
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: my_function(wildcards, <span class="st">"fq2"</span>)</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span>os.path.join(DATABASE_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span>)</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  output: temp(os.path.join(SCRATCH_DIR, <span class="st">"</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">_aln.bam"</span>))</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  log: os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  threads: <span class="dv">8</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  resources:</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    slurm_extra <span class="op">=</span> <span class="ss">f"--wckey=</span><span class="sc">{</span>config[<span class="st">'wckey'</span>]<span class="sc">}</span><span class="ss">"</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    partition: <span class="st">"tsl-medium"</span>,</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    mem_mb <span class="op">=</span> <span class="dv">12000</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  params:</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  log: </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    minimap<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"minimap_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  threads: <span class="dv">8</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  resources:</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    slurm_extra <span class="op">=</span> <span class="ss">f"--wckey=</span><span class="sc">{</span>config[<span class="st">'wckey'</span>]<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    slurm_partition <span class="op">=</span> <span class="st">"tsl-medium"</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    mem_mb <span class="op">=</span> <span class="dv">12000</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  params:</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We also use the <code>resources</code> attribute to request GPU, we simply add the <code>gpu</code> value and ensure we are requesting a partition with GPU access</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  resources:</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    slurm_extra <span class="op">=</span> <span class="ss">f"--wckey=</span><span class="sc">{</span>config[<span class="st">'wckey'</span>]<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    slurm_partition <span class="op">=</span> <span class="st">"tsl-gpu"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    gpu <span class="op">=</span> <span class="dv">1</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    mem_mb <span class="op">=</span> <span class="dv">12000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -332,36 +347,36 @@ pputida, /my/seq/db/pputida_1.fq, /my/seq/db/pputida_2.fq, test, 0h
 ecoli, /my/seq/db/ecoli_mega_R1.fastq.gz, /my/seq/db/ecol_mega_R2_fastq.gz, control, 6h
 ...</code></pre>
 <p>Note that the file names don’t have a common pattern, so won’t easily be resolved by <code>snakemake</code> wildcards. Instead we can build lists of the columns by parsing the file in a usual Python way at the top of the <code>snakemake</code> file</p>
-<div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> []</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>fq1 <span class="op">=</span> []</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>fq2 <span class="op">=</span> []</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> []</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> []</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"sample_info.csv"</span>) <span class="im">as</span> csv:</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> l <span class="kw">in</span> csv:</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        l <span class="op">=</span> l.rstrip(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> l.startswith(<span class="st">"sample"</span>):</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>            els <span class="op">=</span> l.split(<span class="st">","</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>            samples.append( els[<span class="dv">0</span>] )</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            fq1.append( els[<span class="dv">1</span>] )</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>            fq2.append( els[<span class="dv">2</span>] )</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            times.append( els[<span class="dv">3</span>] )</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>            treatments.append( els[<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> []</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>fq1 <span class="op">=</span> []</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>fq2 <span class="op">=</span> []</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> []</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>treatments <span class="op">=</span> []</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"sample_info.csv"</span>) <span class="im">as</span> csv:</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> l <span class="kw">in</span> csv:</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        l <span class="op">=</span> l.rstrip(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> l.startswith(<span class="st">"sample"</span>):</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>            els <span class="op">=</span> l.split(<span class="st">","</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>            samples.append( els[<span class="dv">0</span>] )</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>            fq1.append( els[<span class="dv">1</span>] )</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>            fq2.append( els[<span class="dv">2</span>] )</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            times.append( els[<span class="dv">3</span>] )</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>            treatments.append( els[<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can generate functions that given a <code>sample</code> will return the other items e.g <code>fq</code></p>
-<div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_to_read(sample, samples, fq):</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">'''given a sample and list of samples and a list of fqs returns the fq with the same index</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">as the sample'''</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fq[samples.index(sample)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_to_read(sample, samples, fq):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">'''given a sample and list of samples and a list of fqs returns the fq with the same index</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">as the sample'''</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fq[samples.index(sample)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So now we can use the wildcard to get back the fq file in the <code>lambda</code> function in the rule like this</p>
-<div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: sample_to_read(wildcards.sample, samples, fq1)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: saample_to_read(wildcards.sample, samples, fq2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="kw">lambda</span> wildcards: sample_to_read(wildcards.sample, samples, fq1)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="kw">lambda</span> wildcards: saample_to_read(wildcards.sample, samples, fq2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Which returns the full filesystem path for each fq based on the <code>sample</code> wildcard.</p>
 <p>This is a really useful feature, but it can be tempting to think of it as a solution to everything. Try to use it only for files that come <em>into</em> the <code>snakemake</code> pipeline at the beginning and not for things that are generated internally or for final outputs.</p>
@@ -381,40 +396,15 @@ ecoli, /my/seq/db/ecoli_mega_R1.fastq.gz, /my/seq/db/ecol_mega_R2_fastq.gz, cont
 <section id="unlocking-a-crashed-process" class="level2" data-number="3.6">
 <h2 data-number="3.6" class="anchored" data-anchor-id="unlocking-a-crashed-process"><span class="header-section-number">3.6</span> Unlocking a crashed process</h2>
 <p>Occasionally the <code>snakemake</code> pipeline will crash, often because one of its dependent jobs has failed to complete properly (perhaps it ran out of memory). In this state <code>snakemake</code> will become locked, to prevent further corruption of the pipeline. The next step is for you to check the logs to see what went wrong and manually resolve it. Then (and only then) can you unlock the <code>snakemake</code> pipeline and restart it. Thankfully, <code>snakemake</code> will pick up from where it left off, so no earlier progress will be lost.</p>
-<p>You can unlock with the <code>snakemake</code> option <code>--unlock</code>, e.g</p>
-<pre><code>snakemake --snakefile my_pipeline.snakefile --unlock</code></pre>
-</section>
-<section id="organising-the-snakemake-bits-and-pieces" class="level2" data-number="3.7">
-<h2 data-number="3.7" class="anchored" data-anchor-id="organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.7</span> Organising the <code>snakemake</code> bits and pieces</h2>
-<p>During the setup steps outlined in the <a href="./index.html">Preface</a> there is guidance provided for generating your Project Structure. Following this structure will help organise the required files. Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the <code>config file</code> section. Then consider the top level directory as the base for executing everything. If using the project structure outlined in the <a href="./index.html">Preface</a> then it will look like this</p>
-<pre><code>$ pwd 
-my_pipeline 
-$ tree .
-
-my_pipeline/
-├── lib/
-│   ├── config.yaml        # Configuration file
-│   ├── snakemake_env.yaml # Mamba environment definition
-│   └── tools.def         # Template for Singularity image definition
-├── profiles/
-│   └── config.v9+.yaml   # workflow profile and SLURM-specific settings
-├── src/
-│   ├── run_workflow.py   # Main execution script
-│   └── workflow.smk      # Snakemake workflow rules
-├── VERSION              # Version information
-└── README.md            # This file</code></pre>
-<p>so that when you’re in the <code>my_pipeline</code> directory everything can be run as e.g <code>./src/run_workflow.py --dry-run</code></p>
-<p>The added benefit of using the <code>blank_snake</code> to build your workflow, is that it comes with a handy execution script called <code>run_workflow.py</code>, which, provided the required files are present, will created the sbatch jobs for you.</p>
-<p>It is recommended you use this script for submitting the snakemake job. With this in mind and remembering we are using our <code>workflow_profile</code> to set defaults e.g.&nbsp;<code>config.v9+.yaml</code>, ensure your default runtime is set for long enough for your whole snakemake run to complete. The master slurm job needs to outlast the duration of all the jobs run within the pipeline.</p>
-<p>The parameter to look for is under <code>default-resources</code> and “runtime”</p>
-<pre><code># Default resources for all rules
-default-resources:
-  slurm_partition: "tsl-short"
-  mem_mb: 16000
-  runtime: 30
-  slurm_account: "tsl"  # This must be "tsl" for SLURM
+<p>You can unlock with the <code>snakemake</code> option <code>--unlock</code>, e.g with our running script</p>
+<pre><code>./src/run_workflow.py --unlock
 </code></pre>
-<p>The help options for this script are</p>
+</section>
+<section id="understanding-run_workflow.py" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="understanding-run_workflow.py"><span class="header-section-number">3.7</span> Understanding <code>run_workflow.py</code></h2>
+<p>Throughout this tutorial we have been using a handy execution script called <code>run_workflow.py</code>. This script handles our snakefile and config parameters, as well as our snakemake environment and singularity container to execute our pipeline and submit our jobs to <code>slurm</code>.</p>
+<p>The <code>run_workflow.py</code> script is able to carry out snakemake specific tasks e.g.&nbsp;dry-run, unlock etc.</p>
+<p>For full functionality check the help options below</p>
 <pre><code>./src/run_workflow.py -h
 usage: run_workflow.py [-h] [--config CONFIG] [--dry-run] [--unlock] [--rule RULE]
                        [--force] [--version] [--dag]
@@ -441,7 +431,7 @@ Examples:
 
 Configuration:
   The config file must contain all required parameters defined in this script.</code></pre>
-<p>Importantly we want to ensure we have our <code>config.yaml</code> setup as needed:</p>
+<p>However, in order for the script to do its job properly, we need to make sure we have properly setup our <code>config.yaml</code> as needed:</p>
 <pre><code>scratch: "/tsl/scratch/username" ## Path to your scratch
 workdir: "directory_in_scratch"     ## Directory in scratch to store the results, don't reuse the path to scratch
 singularity_image: "tools.sif"     ## Path to the singularity image to use
@@ -449,6 +439,37 @@ wckey: "your_wckey"     ## Your HPC allocation key
 main_job_partition: "tsl_short"     ## The partition to use for the main snakemake job
 some_config_parameter: "your_value"     ## any additional parameters to pass to snakemake</code></pre>
 <p>This is the most important step before beginning working with our <code>snakemake</code> pipeline.</p>
+<p>Given how handy this script is, we recommend you use this it for submitting a snakemake job. With this in mind and remembering we are using our <code>workflow_profile</code> to set defaults e.g.&nbsp;<code>config.v9+.yaml</code>, ensure your default runtime is set for long enough for your whole snakemake run to complete. The master slurm job needs to outlast the duration of all the jobs run within the pipeline.</p>
+<p>The parameter to look for is under <code>default-resources</code> and “runtime”</p>
+<pre><code># Default resources for all rules
+default-resources:
+  slurm_partition: "tsl-short"
+  mem_mb: 16000
+  runtime: 30
+  slurm_account: "tsl"  # This must be "tsl" for SLURM
+</code></pre>
+</section>
+<section id="organising-the-snakemake-bits-and-pieces" class="level2" data-number="3.8">
+<h2 data-number="3.8" class="anchored" data-anchor-id="organising-the-snakemake-bits-and-pieces"><span class="header-section-number">3.8</span> Organising the <code>snakemake</code> bits and pieces</h2>
+<p>During the setup steps outlined in the <a href="./index.html">Preface</a> there is guidance provided for generating your Project Structure. Following this structure will help organise the required files. Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the <code>config file</code> section. Then consider the top level directory as the base for executing everything. If using the project structure outlined in the <a href="./index.html">Preface</a> then it will look like this</p>
+<pre><code>$ pwd 
+my_pipeline 
+$ tree .
+
+my_pipeline/
+├── lib/
+│   ├── config.yaml        # Configuration file
+│   ├── snakemake_env.yaml # Mamba environment definition
+│   └── tools.def         # Template for Singularity image definition
+├── profiles/
+│   └── config.v9+.yaml   # workflow profile and SLURM-specific settings
+├── src/
+│   ├── run_workflow.py   # Main execution script
+│   └── workflow.smk      # Snakemake workflow rules
+├── VERSION              # Version information
+└── README.md            # This file</code></pre>
+<p>so that when you’re in the <code>my_pipeline</code> directory everything can be run as e.g <code>./src/run_workflow.py --dry-run</code></p>
+<p>The added benefit of using the <code>blank_snake</code> to build your workflow, is that it provides a template you can modify as needed. For example, for your own snakefile and workflow, you can simply modify <code>workflow.smk</code> and build from there.</p>
 
 
 </section>

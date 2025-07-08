@@ -231,6 +231,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Once within the <code>software</code> node, navigate to the location with your container definition file and type:</p>
 <pre><code>sudo singularity build tools.sif tools.def</code></pre>
 <p>It is the path to the <code>tools.sif</code> that will be added to the <code>config.yaml</code> to be used by <code>snakemake</code>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For speed and ease of use, we have put a built version within:</p>
+<pre><code>/tsl/data/singularity_containers/snakemake_tutorial/tools.sif</code></pre>
+<p>Copy this to the location of your project directory.</p>
+</div>
+</div>
 </section>
 <section id="configuration" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="configuration"><span class="header-section-number">1.2</span> Configuration</h2>
@@ -272,21 +287,21 @@ samtools view -S -h -b -q 25 -f 3 &gt; aln.bam
 samtools sort aln.bam -o aln.sorted.bam</code></pre>
 <p>The two commands convert into the following <code>snakemake</code> rules</p>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here are the key points</p>
 <ol type="1">
@@ -304,10 +319,10 @@ samtools sort aln.bam -o aln.sorted.bam</code></pre>
 <section id="the-dry-run" class="level3" data-number="1.4.1">
 <h3 data-number="1.4.1" class="anchored" data-anchor-id="the-dry-run"><span class="header-section-number">1.4.1</span> The dry-run</h3>
 <p>Usually we don’t want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake <code>-n</code> flag creates a dry-run. Put together that makes something like</p>
-<p>Remember to use snakemake you need to activate the Mamba environment (which you created during the setup described on the previous page). To do so type:</p>
+<p>Usually, to use the modern version of snakemake we’d need to activate the Mamba environment (which you created during the setup described on the previous page). This can be achieved by typing:</p>
 <pre><code>source activate /path/to/snakemake_environment
 </code></pre>
-<p>However, as we are using <code>run_workflow.py</code> this step is unnecessary as it will source the environment for you. Therefore, you can simply run the following to produce a dryrun</p>
+<p>Helpfully this is achieved for us when using <code>run_workflow.py</code>. Therefore, you can simply run the following to produce a dryrun</p>
 <pre><code>./src/run_workflow.py --dry-run
 </code></pre>
 <p>This will produce the following output:</p>
@@ -327,12 +342,12 @@ Submitted batch job 13329947
 <p>At the top of the file we are given a summary of the number of times each rule will be run and the resources specified (here just the defaults)</p>
 <pre><code>Building DAG of jobs...
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1</code></pre>
+job                 count       
+----------------  -------    
+align_and_bam           1                           
+final_alignments        1                           
+sort                    1                          
+total                   3                            </code></pre>
 </section>
 <section id="the-jobs" class="level4" data-number="1.4.1.2">
 <h4 data-number="1.4.1.2" class="anchored" data-anchor-id="the-jobs"><span class="header-section-number">1.4.1.2</span> The Jobs</h4>
@@ -366,12 +381,12 @@ localrule final_alignments:
 <h4 data-number="1.4.1.3" class="anchored" data-anchor-id="the-to-be-done-list"><span class="header-section-number">1.4.1.3</span> The to-be-done list</h4>
 <p>This is a version of the summary outlining the bits of the pipeline that need to complete for everything to be in order.</p>
 <pre><code>Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1
+job                 count
+----------------  -------  
+align_and_bam           1   
+final_alignments        1 
+sort                    1 
+total                   3 
 
 Reasons:
     (check individual jobs above for details)
@@ -437,12 +452,12 @@ total 119480
 
 Building DAG of jobs...
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1</code></pre>
+job                 count 
+----------------  ------- 
+align_and_bam           1  
+final_alignments        1 
+sort                    1 
+total                   3 </code></pre>
 <p>it thinks that the whole pipeline needs to be redone! This is the first awesome thing about <code>snakemake</code> - if one of the upstream files is updated (input or output files, it doesn’t matter), the relevant parts of the pipeline will be slated to run again (which in this small pipeline will be everything). <code>snakemake</code> will work out which bits need doing again automatically from the rule descriptions. In large pipelines this is a major time saver and increases reproducibility massively. Bash scripts must be manually managed which leads to more manual errors.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -463,41 +478,41 @@ Note
 <p>The next life improving thing about <code>snakemake</code> is how it handles files. Up to now we’ve hardcoded the file names into the rules. That’s not scalable. <code>snakemake</code> provides a clever pattern match facility between the input and output files to match them up between the rules, it cross-references these with actual filenames and fills in the patterns. It provides access to them using special objects called <code>wildcards</code>, <code>input</code> and <code>output</code>. All we need to do is specify the patterns in our rules and the inputs to the master rule (ie <code>final_alignments</code>). In essence, we start by describing the files we want to get out of the pipeline and <code>snakemake</code> works back from there according to our pattern.</p>
 <p>This is massively easier to see in the rules themselves. Here’s our original set of rules.</p>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.bam'</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">'aln.sorted.bam'</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort aln.bam -o aln.sorted.bam"</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"ecoli_left_R1.fq"</span>,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"ecoli_right_R2.fq"</span>,</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"ecoli_genome.fa"</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"aln.bam"</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | samtools view -S -h -b -q 25 -f 3 &gt; aln.bam"</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">'aln.sorted.bam'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>And here’s our new set of rules</p>
 <div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: </span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    ecoli<span class="op">=</span><span class="st">'ecoli.sorted.bam'</span>,</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    pputida<span class="op">=</span><span class="st">'pputida.sorted.bam'</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">.sorted.bam"</span></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_left_R1.fq"</span>,</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_right_R2.fq"</span>,</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>rule final_alignments:</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    ecoli<span class="op">=</span><span class="st">'ecoli.sorted.bam'</span>,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    pputida<span class="op">=</span><span class="st">'pputida.sorted.bam'</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">.sorted.bam"</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"samtools sort </span><span class="sc">{input}</span><span class="st"> -o </span><span class="sc">{output}</span><span class="st">"</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>rule align_and_bam:</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">input</span>:</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    fq1<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_left_R1.fq"</span>,</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    fq2<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_right_R2.fq"</span>,</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    ref<span class="op">=</span><span class="st">"</span><span class="sc">{sample}</span><span class="st">_genome.fa"</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  output: <span class="st">"</span><span class="sc">{sample}</span><span class="st">_aln.bam"</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  shell: <span class="st">"minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Things to note:</p>
 <ol type="1">
@@ -522,12 +537,12 @@ total 170264
 
 $ ./src/run_workflow.py --dry-run
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           2              1              1
-final_alignments        1              1              1
-sort                    2              1              1
-total                   5              1              1
+job                 count
+----------------  -------  
+align_and_bam           2 
+final_alignments        1  
+sort                    2  
+total                   5  
 
 Reasons:
     (check individual jobs above for details)

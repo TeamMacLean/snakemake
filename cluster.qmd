@@ -29,7 +29,9 @@ rule align_and_bam:
     fq2=lambda wildcards: my_function(wildcards, "fq2"),
     ref=os.path.join(DATABASE_DIR, "{sample}_genome.fa")
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
-  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
+  log: 
+    minimap=os.path.join(LOG_DIR, "minimap_{sample}_{time}_{treatment}.log"),
+    samtools=os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   params:
     quality=25,
     flags=3
@@ -51,7 +53,9 @@ rule align_and_bam:
     fq2=lambda wildcards: my_function(wildcards, "fq2"),
     ref=os.path.join(DATABASE_DIR, "{sample}_genome.fa")
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
-  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
+  log: 
+    minimap=os.path.join(LOG_DIR, "minimap_{sample}_{time}_{treatment}.log"),
+    samtools=os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   params:
     seed=lambda: wildcards: guess_parameter(wildcards),
     quality=25,
@@ -96,14 +100,14 @@ Many of the parameters outlined above are self explanatory but note the options 
 To run `snakemake` with a profile file, see below
 
 ```
-snakemake --snakefile my.snakefile --configfile config.yaml --workflow-profile config.v9+.yaml
+snakemake --snakefile src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles
 ```
 
-Not that this workflow profile needs to be named "config.v9+.yaml" in order for snakemake to recognise it as a profile and utilise the defaults as expected.
+Where `profiles` is a directory containing your workflow profile, which needs to be named "config.v9+.yaml" in order for snakemake to recognise it as a profile and utilise the defaults as expected.
 
 If a user wishes to provide specific `slurm` resources for a certain rule, then this can be provided by using the `resources` attribute.  In practice this means that the job associated with a rule will get its own specific value of `mem`, `partition` and any other `slurm` options, from its `resources` block, allowing the user to specify the value as needed. 
 
-Below is an example of using the `resources` attribute to assign `mem`, `partition` and `wc-key` (the value of which is located in the `config.yaml`).  Note when assigning the number of cores (threads), then the attribute `threads` is used.
+Below is an example of using the `resources` attribute to assign `mem`, `slurm_partition` and `wc-key` (the value of which is located in the `config.yaml`).  Note when assigning the number of cores (threads), then the attribute `threads` is used.
 
 ```{python}
 #| eval: false
@@ -113,11 +117,13 @@ rule align_and_bam:
     fq2=lambda wildcards: my_function(wildcards, "fq2")
     ref=os.path.join(DATABASE_DIR, "{sample}_genome.fa")
   output: temp(os.path.join(SCRATCH_DIR, "{sample}_{time}_{treatment}_aln.bam"))
-  log: os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
+  log: 
+    minimap=os.path.join(LOG_DIR, "minimap_{sample}_{time}_{treatment}.log"),
+    samtools=os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
   threads: 8
   resources:
     slurm_extra = f"--wckey={config['wckey']}",
-    partition: "tsl-medium",
+    slurm_partition = "tsl-medium",
     mem_mb = 12000
   params:
     seed=lambda: wildcards: guess_parameter(wildcards),
@@ -129,6 +135,17 @@ samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {p
 """
 ```
 
+We also use the `resources` attribute to request GPU, we simply add the `gpu` value and ensure we are requesting a partition with GPU access
+
+```{python}
+#| eval: false
+  resources:
+    slurm_extra = f"--wckey={config['wckey']}",
+    slurm_partition = "tsl-gpu",
+    gpu = 1,
+    mem_mb = 12000
+
+```
 
 ## Using a file-of-files as a database for mapping wildcards to filesystem paths
 
@@ -209,54 +226,20 @@ As with specifying the number of parallel jobs, it is recommended to set these v
 
 Occasionally the `snakemake` pipeline will crash, often because one of its dependent jobs has failed to complete properly (perhaps it ran out of memory). In this state `snakemake` will become locked, to prevent further corruption of the pipeline. The next step is for you to check the logs to see what went wrong and manually resolve it. Then (and only then) can you unlock the `snakemake` pipeline and restart it. Thankfully, `snakemake` will pick up from where it left off, so no earlier progress will be lost.
 
-You can unlock with the `snakemake` option `--unlock`, e.g
+You can unlock with the `snakemake` option `--unlock`, e.g with our running script
 
 ```
-snakemake --snakefile my_pipeline.snakefile --unlock
-```
-
-## Organising the `snakemake` bits and pieces
-
-During the setup steps outlined in the [Preface](index.qmd) there is guidance provided for generating your Project Structure.  Following this structure will help organise the required files.  Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the `config file` section. Then consider the top level directory as the base for executing everything. If using the project structure outlined in the [Preface](index.qmd) then it will look like this
-
-```
-$ pwd 
-my_pipeline 
-$ tree .
-
-my_pipeline/
-├── lib/
-│   ├── config.yaml        # Configuration file
-│   ├── snakemake_env.yaml # Mamba environment definition
-│   └── tools.def         # Template for Singularity image definition
-├── profiles/
-│   └── config.v9+.yaml   # workflow profile and SLURM-specific settings
-├── src/
-│   ├── run_workflow.py   # Main execution script
-│   └── workflow.smk      # Snakemake workflow rules
-├── VERSION              # Version information
-└── README.md            # This file
-```
-
-so that when you're in the `my_pipeline` directory everything can be run as e.g `./src/run_workflow.py --dry-run`
-
-The added benefit of using the `blank_snake` to build your workflow, is that it comes with a handy execution script called `run_workflow.py`, which, provided the required files are present, will created the sbatch jobs for you.
-
-It is recommended you use this script for submitting the snakemake job.  With this in mind and remembering we are using our `workflow_profile` to set defaults e.g. `config.v9+.yaml`, ensure your default runtime is set for long enough for your whole snakemake run to complete.  The master slurm job needs to outlast the duration of all the jobs run within the pipeline.
-
-The parameter to look for is under `default-resources` and "runtime"
-
-```
-# Default resources for all rules
-default-resources:
-  slurm_partition: "tsl-short"
-  mem_mb: 16000
-  runtime: 30
-  slurm_account: "tsl"  # This must be "tsl" for SLURM
+./src/run_workflow.py --unlock
 
 ```
 
-The help options for this script are
+## Understanding `run_workflow.py`
+
+Throughout this tutorial we have been using a handy execution script called `run_workflow.py`.  This script handles our snakefile and config parameters, as well as our snakemake environment and singularity container to execute our pipeline and submit our jobs to `slurm`.
+
+The `run_workflow.py` script is able to carry out snakemake specific tasks e.g. dry-run, unlock etc.  
+
+For full functionality check the help options below
 
 ```
 ./src/run_workflow.py -h
@@ -287,7 +270,7 @@ Configuration:
   The config file must contain all required parameters defined in this script.
   ```
 
-Importantly we want to ensure we have our `config.yaml` setup as needed:
+However, in order for the script to do its job properly, we need to make sure we have properly setup our `config.yaml` as needed:
 
 ```
 scratch: "/tsl/scratch/username" ## Path to your scratch
@@ -299,3 +282,45 @@ some_config_parameter: "your_value"     ## any additional parameters to pass to 
 ```
 
 This is the most important step before beginning working with our `snakemake` pipeline.
+
+
+Given how handy this script is, we recommend you use this it for submitting a snakemake job.  With this in mind and remembering we are using our `workflow_profile` to set defaults e.g. `config.v9+.yaml`, ensure your default runtime is set for long enough for your whole snakemake run to complete.  The master slurm job needs to outlast the duration of all the jobs run within the pipeline.
+
+The parameter to look for is under `default-resources` and "runtime"
+
+```
+# Default resources for all rules
+default-resources:
+  slurm_partition: "tsl-short"
+  mem_mb: 16000
+  runtime: 30
+  slurm_account: "tsl"  # This must be "tsl" for SLURM
+
+```
+
+## Organising the `snakemake` bits and pieces
+
+During the setup steps outlined in the [Preface](index.qmd) there is guidance provided for generating your Project Structure.  Following this structure will help organise the required files.  Consider putting the scripts and results in separate directories and temp files into scratch as discussed in the `config file` section. Then consider the top level directory as the base for executing everything. If using the project structure outlined in the [Preface](index.qmd) then it will look like this
+
+```
+$ pwd 
+my_pipeline 
+$ tree .
+
+my_pipeline/
+├── lib/
+│   ├── config.yaml        # Configuration file
+│   ├── snakemake_env.yaml # Mamba environment definition
+│   └── tools.def         # Template for Singularity image definition
+├── profiles/
+│   └── config.v9+.yaml   # workflow profile and SLURM-specific settings
+├── src/
+│   ├── run_workflow.py   # Main execution script
+│   └── workflow.smk      # Snakemake workflow rules
+├── VERSION              # Version information
+└── README.md            # This file
+```
+
+so that when you're in the `my_pipeline` directory everything can be run as e.g `./src/run_workflow.py --dry-run`
+
+The added benefit of using the `blank_snake` to build your workflow, is that it provides a template you can modify as needed.  For example, for your own snakefile and workflow, you can simply modify `workflow.smk` and build from there.

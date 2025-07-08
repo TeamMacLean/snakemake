@@ -39,6 +39,17 @@ sudo singularity build tools.sif tools.def
 
 It is the path to the `tools.sif` that will be added to the `config.yaml` to be used by `snakemake`.
 
+
+:::{.callout-note}
+For speed and ease of use, we have put a built version within:
+
+```
+/tsl/data/singularity_containers/snakemake_tutorial/tools.sif
+```
+
+Copy this to the location of your project directory.
+:::
+
 ## Configuration
 
 Before we begin, we need to setup our configuration file for `run_workflow.py` to utilise.  The configuration file or `config.yaml` stores information that we will want to use throughout our snakemake workflow e.g. results directory, wckey information etc.  We will discuss the benefits of this file in more detail later. For now we will just configure it to begin our work.
@@ -131,13 +142,13 @@ To generate the snakefile for this tutorial, modify the file `./src/workflow.smk
 
 Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run. Put together that makes something like
 
-Remember to use snakemake you need to activate the Mamba environment (which you created during the setup described on the previous page).  To do so type:
+Usually, to use the modern version of snakemake we'd need to activate the Mamba environment (which you created during the setup described on the previous page).  This can be achieved by typing:
 
 ```
 source activate /path/to/snakemake_environment
 
 ```
-However, as we are using `run_workflow.py` this step is unnecessary as it will source the environment for you.  Therefore, you can simply run the following to produce a dryrun
+Helpfully this is achieved for us when using `run_workflow.py`.  Therefore, you can simply run the following to produce a dryrun
 
 ```
 ./src/run_workflow.py --dry-run
@@ -170,12 +181,12 @@ At the top of the file we are given a summary of the number of times each rule w
 ```
 Building DAG of jobs...
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1
+job                 count       
+----------------  -------    
+align_and_bam           1                           
+final_alignments        1                           
+sort                    1                          
+total                   3                            
 ```
 
 #### The Jobs
@@ -215,12 +226,12 @@ This is a version of the summary outlining the bits of the pipeline that need to
 
 ```
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1
+job                 count
+----------------  -------  
+align_and_bam           1   
+final_alignments        1 
+sort                    1 
+total                   3 
 
 Reasons:
     (check individual jobs above for details)
@@ -316,12 +327,12 @@ $ ./src/run_workflow.py --dry-run
 
 Building DAG of jobs...
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1
+job                 count 
+----------------  ------- 
+align_and_bam           1  
+final_alignments        1 
+sort                    1 
+total                   3 
 ```
 
 it thinks that the whole pipeline needs to be redone! This is the first awesome thing about `snakemake` - if one of the upstream files is updated (input or output files, it doesn't matter), the relevant parts of the pipeline will be slated to run again (which in this small pipeline will be everything). `snakemake` will work out which bits need doing again automatically from the rule descriptions. In large pipelines this is a major time saver and increases reproducibility massively. Bash scripts must be manually managed which leads to more manual errors.
@@ -411,12 +422,12 @@ total 170264
 
 $ ./src/run_workflow.py --dry-run
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           2              1              1
-final_alignments        1              1              1
-sort                    2              1              1
-total                   5              1              1
+job                 count
+----------------  -------  
+align_and_bam           2 
+final_alignments        1  
+sort                    2  
+total                   5  
 
 Reasons:
     (check individual jobs above for details)
