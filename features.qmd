@@ -220,10 +220,11 @@ rule align_and_bam:
   log: 
     minimap=os.path.join(LOG_DIR, "minimap_{sample}_{time}_{treatment}.log"),
     samtools=os.path.join(LOG_DIR, "align_bam_{sample}_{time}_{treatment}.log")
-  shell:"""
-minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | \
-samtools view -S -h -b -q 25 -f 3 > {output} 2> {log.samtools}
-"""
+  shell:
+    """
+    minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | \
+    samtools view -S -h -b -q 25 -f 3 > {output} 2> {log.samtools}
+    """
 ```
 
 A common alternative that prevents the snakefile from getting gummed up with job specifics is just to put the commands in a bash script and call that. Any script that can be run on the command line can be run this way, including Python, R etc

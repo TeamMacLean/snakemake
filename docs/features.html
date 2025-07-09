@@ -378,10 +378,11 @@ drwxrwx---  2 taz23vul TSL_20   0 Jul  1 12:37 rule_sort</code></pre>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  log: </span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    minimap<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"minimap_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>),</span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    samtools<span class="op">=</span>os.path.join(LOG_DIR, <span class="st">"align_bam_</span><span class="sc">{sample}</span><span class="st">_</span><span class="sc">{time}</span><span class="st">_</span><span class="sc">{treatment}</span><span class="st">.log"</span>)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q 25 -f 3 &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  shell:</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">    minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2&gt; {log.minimap} | </span><span class="ch">\</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">    samtools view -S -h -b -q 25 -f 3 &gt; {output} 2&gt; {log.samtools}</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A common alternative that prevents the snakefile from getting gummed up with job specifics is just to put the commands in a bash script and call that. Any script that can be run on the command line can be run this way, including Python, R etc</p>
 <div class="cell" data-execution_count="8">

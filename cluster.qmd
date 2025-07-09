@@ -36,10 +36,10 @@ rule align_and_bam:
     quality=25,
     flags=3
   shell:
-  """
-  minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
-  samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
-  """
+    """
+    minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
+    samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+    """
 ```
 
 ### Dynamic parameter setting
