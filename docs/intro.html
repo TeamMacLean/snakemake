@@ -230,7 +230,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>software</code></p>
 <p>Once within the <code>software</code> node, navigate to the location with your container definition file and type:</p>
 <pre><code>sudo singularity build tools.sif tools.def</code></pre>
-<p>It is the path to the <code>tools.sif</code> that will be added to the <code>config.yaml</code> to be used by <code>snakemake</code>.</p>
+<p>We add the path to the <code>tools.sif</code> to the <code>config.yaml</code> to be used by <code>snakemake</code>.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -281,6 +281,7 @@ workdir: "directory_name"</code></pre>
 <section id="making-a-snakefile" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="making-a-snakefile"><span class="header-section-number">1.3</span> Making a <code>snakefile</code></h2>
 <p>Excellent, now we have all the required containers and configurations sorted we can begin learning about <code>snakemake</code> and creating our first snakefile.</p>
+<p>Within the sample data there are three directories. We will start with the data contained within <code>ecoli_sample</code>, copy the .fq and .fa to your project directory to begin.</p>
 <p><code>snakemake</code> is intended to replace the mess of <code>bash</code> scripts you use to run your workflows. So let’s look at converting a simple <code>bash</code> script to <code>snakemake</code></p>
 <pre><code>minimap2 -ax sr ecoli_genome.fa ecoli_left_R1.fq ecoli_right_R2.fq | \
 samtools view -S -h -b -q 25 -f 3 &gt; aln.bam
@@ -339,7 +340,7 @@ Submitted batch job 13329947
 </ol>
 <section id="the-summary" class="level4" data-number="1.4.1.1">
 <h4 data-number="1.4.1.1" class="anchored" data-anchor-id="the-summary"><span class="header-section-number">1.4.1.1</span> The Summary</h4>
-<p>At the top of the file we are given a summary of the number of times each rule will be run and the resources specified (here just the defaults)</p>
+<p>At the top of the file we are given a summary of the number of times each rule will be run</p>
 <pre><code>Building DAG of jobs...
 Job stats:
 job                 count       
@@ -402,23 +403,38 @@ This was a dry-run (flag -n). The order of jobs does not reflect the order of ex
 <h3 data-number="1.4.2" class="anchored" data-anchor-id="the-run-proper"><span class="header-section-number">1.4.2</span> The Run Proper</h3>
 <p>Everything looks good in the dry-run so let’s go ahead and run. Although we haven’t made explicit point of it, this run will happen in the current directory with all files expected to be in and going to the current directory. That looks like this at the moment.</p>
 <pre><code>$ ls -l
-total 85136
--rw-r--r--@ 1 macleand  2006   5205449  2 Jul  2019 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile</code></pre>
+total 1352200
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:13 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  8 12:34 lib
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20         95 Jul  8 14:36 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION</code></pre>
 <p>Run the pipeline with</p>
 <pre><code>./src/run_workflow.py</code></pre>
-<p>We get a lot of output to the screen our slurm-XXXXXX.out file. Hopefully at the end we see</p>
+<p>We will get output confirming the job submission and an sbatch number. We will also get the <code>snakemake</code> output to the slurm-XXXXXX.out file. Hopefully at the end we see</p>
 <pre><code>Finished job 0.
 3 of 3 steps (100%) done</code></pre>
 <p>an indication that it has completed everything (if not we’re into some debugging - more on that later). And the working directory looks like this now</p>
-<pre><code>-rw-r--r--  1 macleand  2006   9397482 28 Oct 10:13 aln.bam
--rw-r--r--  1 macleand  2006   7929255 28 Oct 10:13 aln.sorted.bam
--rw-r--r--@ 1 macleand  2006   5205449  2 Jul  2019 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile</code></pre>
+<pre><code>-rwxrwx---  1 taz23vul TSL_20    9397509 Jul  9 09:18 aln.bam
+-rwxrwx---  1 taz23vul TSL_20    7929252 Jul  9 09:19 aln.sorted.bam
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:13 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  9 09:17 lib
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+-rwxrwx---  1 taz23vul TSL_20       2076 Jul  9 09:20 slurm-13611796.out
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20        128 Jul  9 09:16 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION</code></pre>
 <p>All the files we expected to be created have been and are sitting nicely in the directory. Hurray!</p>
 </section>
 </section>
@@ -438,15 +454,23 @@ Building DAG of jobs...
 Nothing to be done (all requested files are present and up to date).
 </code></pre>
 <p>Well, that’s reassuring. Nothing need be done. What if a component file changed. Lets look at what happens if an input file is updated. Using <code>touch</code> to update the timestamp on the reference file</p>
-<pre><code>$ sample_data touch ecoli_genome.fa
-$ sample_data ls -l
-total 119480
--rw-r--r--  1 macleand  2006   9397482 28 Oct 10:13 aln.bam
--rw-r--r--  1 macleand  2006   7929255 28 Oct 10:13 aln.sorted.bam
--rw-r--r--@ 1 macleand  2006   5205449 28 Oct 10:32 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile</code></pre>
+<pre><code>$ touch ecoli_genome.fa
+$ ls -l
+
+-rwxrwx---  1 taz23vul TSL_20    9397509 Jul  9 09:18 aln.bam
+-rwxrwx---  1 taz23vul TSL_20    7929252 Jul  9 09:19 aln.sorted.bam
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:21 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  9 09:17 lib
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+-rwxrwx---  1 taz23vul TSL_20       2076 Jul  9 09:20 slurm-13611796.out
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20        128 Jul  9 09:16 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION</code></pre>
 <p>One of the source files is now newer than the outputs. What does <code>snakemake</code> now think needs to be done</p>
 <pre><code>$ ./src/run_workflow.py --dry-run
 
@@ -522,17 +546,24 @@ Note
 <li>We can thread the replacements into the <code>shell</code> commands to make them generic across samples too.</li>
 </ol>
 <p>So we can hopefully see how the rules link up to each other.</p>
-<p>What does the dry-run say in the following folder with multiple samples in there?</p>
+<p>To fully understand and test this, we need to copy over additional files for our <code>snakemake</code> workflow to handle. From our sample data, copy the .fq and .fa from the <code>pputida_sample</code> directory.</p>
+<p>Once these files are copied over to the project directory, what does the dry-run say?</p>
 <pre><code>$ ls -l
-total 170264
--rw-r--r--@ 1 macleand  2006   5205449 28 Oct 11:04 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       479 28 Oct 11:28 multi.snakefile
--rw-r--r--@ 1 macleand  2006   5205449 28 Oct 11:04 pputida_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 pputida_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 pputida_right_R2.fq
-
+total 1403832
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:21 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  9 09:17 lib
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:37 pputida_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:37 pputida_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:37 pputida_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20        128 Jul  9 09:37 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION
 
 
 $ ./src/run_workflow.py --dry-run

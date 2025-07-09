@@ -245,10 +245,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  params:</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> &gt; </span><span class="sc">{output}</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  shell:</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">  minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | </span><span class="ch">\</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">  samtools view -S -h -b -q {params.quality} -f {params.flags} &gt; {output}</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">  """</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="dynamic-parameter-setting" class="level3" data-number="3.2.2">
@@ -268,10 +269,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  shell:</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">    minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2&gt; {log.minimap} | </span><span class="ch">\</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">    samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} &gt; {output} 2&gt; {log.samtools}</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note the value at <code>params</code> can be additional files, output directories not required for downstream jobs and can be assigned from the <code>config.yaml</code>.</p>
 </section>
@@ -301,7 +303,7 @@ set-threads:
 <p>Many of the parameters outlined above are self explanatory but note the options to provide default resources and threads. This can be helpful if a number of your rules use similar settings.</p>
 <p>To run <code>snakemake</code> with a profile file, see below</p>
 <pre><code>snakemake --snakefile src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles</code></pre>
-<p>Where <code>profiles</code> is a directory containing your workflow profile, which needs to be named “config.v9+.yaml” in order for snakemake to recognise it as a profile and utilise the defaults as expected.</p>
+<p>Where <code>profiles</code> is a directory containing your workflow profile, which needs to be named “config.v9+.yaml” in order for snakemake to recognise it as a profile and utilise the defaults as expected. Helpfully for us, the <code>run_workflow.py</code> passes the profile information, therefore we don’t need to use the command above, but it is helpful to understand what is happening.</p>
 <p>If a user wishes to provide specific <code>slurm</code> resources for a certain rule, then this can be provided by using the <code>resources</code> attribute. In practice this means that the job associated with a rule will get its own specific value of <code>mem</code>, <code>partition</code> and any other <code>slurm</code> options, from its <code>resources</code> block, allowing the user to specify the value as needed.</p>
 <p>Below is an example of using the <code>resources</code> attribute to assign <code>mem</code>, <code>slurm_partition</code> and <code>wc-key</code> (the value of which is located in the <code>config.yaml</code>). Note when assigning the number of cores (threads), then the attribute <code>threads</code> is used.</p>
 <div class="cell" data-execution_count="3">
@@ -323,10 +325,11 @@ set-threads:
 <span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="kw">lambda</span>: wildcards: guess_parameter(wildcards),</span>
 <span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    quality<span class="op">=</span><span class="dv">25</span>,</span>
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    flags<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  shell:<span class="st">"""</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="st">minimap2 -ax sr </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.fq1}</span><span class="st"> </span><span class="sc">{input.fq2}</span><span class="st"> 2&gt; </span><span class="sc">{log.minimap}</span><span class="st"> | </span><span class="ch">\</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="st">samtools view -S -h -b -q </span><span class="sc">{params.quality}</span><span class="st"> -f </span><span class="sc">{params.flags}</span><span class="st"> --subsample-seed </span><span class="sc">{params.seed}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st"> 2&gt; </span><span class="sc">{log.samtools}</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  shell:</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">    minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2&gt; {log.minimap} | </span><span class="ch">\</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">    samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} &gt; {output} 2&gt; {log.samtools}</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We also use the <code>resources</code> attribute to request GPU, we simply add the <code>gpu</code> value and ensure we are requesting a partition with GPU access</p>
 <div class="cell" data-execution_count="4">
@@ -438,9 +441,21 @@ singularity_image: "tools.sif"     ## Path to the singularity image to use
 wckey: "your_wckey"     ## Your HPC allocation key
 main_job_partition: "tsl_short"     ## The partition to use for the main snakemake job
 some_config_parameter: "your_value"     ## any additional parameters to pass to snakemake</code></pre>
-<p>This is the most important step before beginning working with our <code>snakemake</code> pipeline.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This step is vital before beginning to work with our <code>snakemake</code> pipeline.</p>
+</div>
+</div>
 <p>Given how handy this script is, we recommend you use this it for submitting a snakemake job. With this in mind and remembering we are using our <code>workflow_profile</code> to set defaults e.g.&nbsp;<code>config.v9+.yaml</code>, ensure your default runtime is set for long enough for your whole snakemake run to complete. The master slurm job needs to outlast the duration of all the jobs run within the pipeline.</p>
-<p>The parameter to look for is under <code>default-resources</code> and “runtime”</p>
+<p>The parameter to look for is under <code>default-resources</code> and <code>runtime</code></p>
 <pre><code># Default resources for all rules
 default-resources:
   slurm_partition: "tsl-short"
