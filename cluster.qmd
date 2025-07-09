@@ -35,10 +35,11 @@ rule align_and_bam:
   params:
     quality=25,
     flags=3
-  shell:"""
-minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
-samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
-"""
+  shell:
+  """
+  minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} | \
+  samtools view -S -h -b -q {params.quality} -f {params.flags} > {output}
+  """
 ```
 
 ### Dynamic parameter setting
@@ -60,10 +61,11 @@ rule align_and_bam:
     seed=lambda: wildcards: guess_parameter(wildcards),
     quality=25,
     flags=3
-  shell:"""
-minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | \
-samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} > {output} 2> {log.samtools}
-"""
+  shell:
+    """
+    minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | \
+    samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} > {output} 2> {log.samtools}
+    """
 ```
 
 Note the value at `params` can be additional files, output directories not required for downstream jobs and can be assigned from the `config.yaml`.
@@ -103,7 +105,7 @@ To run `snakemake` with a profile file, see below
 snakemake --snakefile src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles
 ```
 
-Where `profiles` is a directory containing your workflow profile, which needs to be named "config.v9+.yaml" in order for snakemake to recognise it as a profile and utilise the defaults as expected.
+Where `profiles` is a directory containing your workflow profile, which needs to be named "config.v9+.yaml" in order for snakemake to recognise it as a profile and utilise the defaults as expected.  Helpfully for us, the `run_workflow.py` passes the profile information, therefore we don't need to use the command above, but it is helpful to understand what is happening.
 
 If a user wishes to provide specific `slurm` resources for a certain rule, then this can be provided by using the `resources` attribute.  In practice this means that the job associated with a rule will get its own specific value of `mem`, `partition` and any other `slurm` options, from its `resources` block, allowing the user to specify the value as needed. 
 
@@ -129,10 +131,11 @@ rule align_and_bam:
     seed=lambda: wildcards: guess_parameter(wildcards),
     quality=25,
     flags=3
-  shell:"""
-minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | \
-samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} > {output} 2> {log.samtools}
-"""
+  shell:
+    """
+    minimap2 -ax sr {input.ref} {input.fq1} {input.fq2} 2> {log.minimap} | \
+    samtools view -S -h -b -q {params.quality} -f {params.flags} --subsample-seed {params.seed} > {output} 2> {log.samtools}
+    """
 ```
 
 We also use the `resources` attribute to request GPU, we simply add the `gpu` value and ensure we are requesting a partition with GPU access
@@ -281,12 +284,13 @@ main_job_partition: "tsl_short"     ## The partition to use for the main snakema
 some_config_parameter: "your_value"     ## any additional parameters to pass to snakemake
 ```
 
-This is the most important step before beginning working with our `snakemake` pipeline.
-
+:::{.callout-note}
+This step is vital before beginning to work with our `snakemake` pipeline.
+:::
 
 Given how handy this script is, we recommend you use this it for submitting a snakemake job.  With this in mind and remembering we are using our `workflow_profile` to set defaults e.g. `config.v9+.yaml`, ensure your default runtime is set for long enough for your whole snakemake run to complete.  The master slurm job needs to outlast the duration of all the jobs run within the pipeline.
 
-The parameter to look for is under `default-resources` and "runtime"
+The parameter to look for is under `default-resources` and `runtime`
 
 ```
 # Default resources for all rules
