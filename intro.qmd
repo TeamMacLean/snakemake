@@ -3,8 +3,96 @@
 
 In this section we'll look at making and running a first pipeline and understanding why `snakemake` is better for you than `bash` scripts.
 
+The guidance given here is for using `snakemake` version `9.3` and an update from the previous tutorial.  Many of the recommendations are not only required but will also provide a robust and reproducible workflow.
+
+## `singularity`
+
+On a cluster like the one TSL uses each job in the snakemake pipeline runs on a machine with its own execution environment, that is its own memory, CPUs and loaded software. This means that things like `source` and `singularity` images have to be loaded in each job and not globally. 
+
+`snakemake` introduced the ability to run required tools from containers e.g. Docker, Singularity.  To enable this function we add the attribute `container` to the snakefile (which we will explain further below).
+
+
+```{python}
+#| eval: false
+
+container: config["singularity_image"]
+
+```
+
+Where the container location has been defined in the `config.yaml` (discussed next).
+
+For each snakemake workflow that is built, there should be a specific `singularity` container for the required software/tools to carry out the analysis the snakefile defines.  To build a container you require a definition file.  Often we can use Mamba to install our tools, therefore a template definition file has been written that can be modified for each individual's needs.  This can be located on the HPC at:
+
+`/tsl/hpc-scripts/bioinformatics/blank_snake/lib/tools.def`
+
+Once the definition file has been modified the container can be built. Note the definition file provide via the `blank_snake` tutorial can be used as is for this `snakemake` tutorial.
+
+To build the container the `software` node must be used, which can be accessed on the HPC by typing:
+
+`software`
+
+Once within the `software` node, navigate to the location with your container definition file and type:
+
+```
+sudo singularity build tools.sif tools.def
+```
+
+We add the path to the `tools.sif` to the `config.yaml` to be used by `snakemake`.
+
+
+:::{.callout-note}
+For speed and ease of use, we have put a built version within:
+
+```
+/tsl/data/singularity_containers/snakemake_tutorial/tools.sif
+```
+
+Copy this to the location of your project directory.
+:::
+
+## Configuration
+
+Before we begin, we need to setup our configuration file for `run_workflow.py` to utilise.  The configuration file or `config.yaml` stores information that we will want to use throughout our snakemake workflow e.g. results directory, wckey information etc.  We will discuss the benefits of this file in more detail later. For now we will just configure it to begin our work.
+
+Within your project directory you will have `./lib/config.yaml`, open this using your screen-based text editor of choice e.g. `nano`, `vim` etc.
+
+```
+## Configuration for the pipeline
+
+## Path to your scratch, 
+scratch: "/tsl/scratch/username"
+## Directory in scratch to store the results
+workdir: "directory_in_scratch"
+
+## Path to the singularity image to use
+singularity_image: "tools.sif"
+
+## Path to your SLURM parameters
+profile_dir: "./profiles"
+
+## Your HPC allocation key
+wckey: "your_wckey"  # Your HPC allocation key
+
+## The partition to use for the main snakemake job
+main_job_partition: "tsl_short"
+
+## any additional parameters to pass to snakemake
+some_config_parameter: "your_value"
+
+```
+The parameters we need to update are: `scratch`, `workdir`, `wckey` and `main_job_partition`.  Note for `scratch` it is required you give the full path and for `workdir` you can just give the directory name located within `scratch`.
+
+```
+scratch: "/tsl/scratch/username/path/to/directory"
+workdir: "directory_name"
+```
+Once `config.yaml` has been updated we can begin working with `snakemake`.
 
 ## Making a `snakefile`
+
+Excellent, now we have all the required containers and configurations sorted we can begin learning about `snakemake` and creating our first snakefile.
+
+Within the sample data there are three directories.  We will start with the data contained within `ecoli_sample`, copy the .fq and .fa to your project directory to begin.
 
 `snakemake` is intended to replace the mess of `bash` scripts you use to run your workflows. So let's look at converting a simple `bash` script to `snakemake`
 
@@ -47,24 +135,42 @@ That is the basis of it!
 
 ## Running the pipeline
 
-We run the rules by putting them in a file. Usually this is suffixed with `.snakefile` to give something like `my_pipeline.snakefile`. When we come to run the pipeline `snakemake` needs us to tell it the name of the rule to run (recall our base rule is `final_alignments` ), and the snakefile and the cores the pipeline is allowed to use with the `-c flag`. 
+We run the rules by putting them in a file. Usually this is suffixed with `.snakefile` or `.smk` to give something like `my_pipeline.snakefile` or `my_pipeline.smk`. When we come to run the pipeline `snakemake` needs us to tell it the name of the rule to run (recall our base rule is `final_alignments` ), and the snakefile and the cores the pipeline is allowed to use with the `-c flag`.
+
+To generate the snakefile for this tutorial, modify the file `./src/workflow.smk` removing everything below __line 18__ e.g. from the line above "# Define parameters via a config file if needed".  Once you have removed those lines you can add in the snakemake rules defined above.
 
 
 ### The dry-run
 
-Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run. Put together that makes something like  
+Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run.
+
+Usually, to use the modern version of snakemake we'd need to activate the Mamba environment (which you created during the setup described on the previous page).  This can be achieved by typing:
 
 ```
-snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+source activate /path/to/snakemake_environment
+
+```
+Helpfully this is achieved for us when using `run_workflow.py`.  Therefore, you can simply run the following to produce a dryrun
+
+```
+./src/run_workflow.py --dry-run
+
+```
+This will produce the following output:
+
+```
+Running command: sbatch --partition tsl-long --wckey wckey -J workingdir --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile ./profiles --executor slurm -n "
+Submitted batch job 13329947
+
 ```
 
-:::{.callout-tip}
-## Default file and rules
+We get a lot of output, which can be found within the slurm-XXXXXX.out file, which can be viewed using your screen-based text editor of choice e.g. `nano`, `vim` etc.  
 
-Actually, `snakemake` looks for the default file `Snakefile` and the main rule `all` so if you use them you can have a command like `snakemake -c1 -n` which is less verbose but also less explicit. 
-:::
+```
+nano slurm-13329947.out
+```
 
-We get a lot of output. It can be broken down into a few bits,
+It can be broken down into a few bits,
 
   1. The Summary
   2. The Jobs
@@ -73,21 +179,21 @@ We get a lot of output. It can be broken down into a few bits,
 
 #### The Summary
 
-At the top of the file we are given a summary of the number of times each rule will be run and the resources specified (here just the defaults)
+At the top of the file we are given a summary of the number of times each rule will be run
 ```
 Building DAG of jobs...
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1
+job                 count       
+----------------  -------    
+align_and_bam           1                           
+final_alignments        1                           
+sort                    1                          
+total                   3                            
 ```
 
 #### The Jobs
 
-Next we get a much more granular view, each job is presented with the expected input and output and a reason why it needs running. Usually this will be either `missing output files` IE the output hasn't been created so the job still needs to run or `Input files updated by another job` meaning that an input file is newer than an output file (or when it is created it will be) so this file needs updating.
+Next we get a much more granular view, each job is presented with the expected input and output and a reason why it needs running. Usually this will be either `missing output files` i.e. the output hasn't been created so the job still needs to run or `Input files updated by another job` meaning that an input file is newer than an output file (or when it is created it will be) so this file needs updating.
 
 ```
 [Wed Oct 26 16:51:18 2022]
@@ -122,12 +228,12 @@ This is a version of the summary outlining the bits of the pipeline that need to
 
 ```
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1
+job                 count
+----------------  -------  
+align_and_bam           1   
+final_alignments        1 
+sort                    1 
+total                   3 
 
 Reasons:
     (check individual jobs above for details)
@@ -139,11 +245,6 @@ Reasons:
 This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
 ```
 
-:::{.callout-tip}
-## Using a log
-As your list of jobs grows and the output from `snakemake` becomes large, its best to use a log file. Do that with `-o somename.log` e.g 
-`snakemake --snakefile final_alignments my_pipeline.snakefile -n -o my_pipeline.log`
-:::
 
 ### The Run Proper
 
@@ -152,19 +253,26 @@ Everything looks good in the dry-run so let's go ahead and run. Although we have
 
 ```
 $ ls -l
-total 85136
--rw-r--r--@ 1 macleand  2006   5205449  2 Jul  2019 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile
+total 1352200
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:13 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  8 12:34 lib
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20         95 Jul  8 14:36 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION
 ```
 
 Run the pipeline with 
 ```
-snakemake final_alignments --snakefile my_pipeline.snakefile -c1
+./src/run_workflow.py
 ```
 
-We get a lot of output to the screen (or the log if we specified that). Hopefully at the end we see
+We will get output confirming the job submission and an sbatch number.  We will also get the `snakemake` output to the slurm-XXXXXX.out file. Hopefully at the end we see
 
 ```
 Finished job 0.
@@ -174,12 +282,20 @@ Finished job 0.
 an indication that it has completed everything (if not we're into some debugging - more on that later). And the working directory looks like this now
 
 ```
--rw-r--r--  1 macleand  2006   9397482 28 Oct 10:13 aln.bam
--rw-r--r--  1 macleand  2006   7929255 28 Oct 10:13 aln.sorted.bam
--rw-r--r--@ 1 macleand  2006   5205449  2 Jul  2019 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile
+-rwxrwx---  1 taz23vul TSL_20    9397509 Jul  9 09:18 aln.bam
+-rwxrwx---  1 taz23vul TSL_20    7929252 Jul  9 09:19 aln.sorted.bam
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:13 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  9 09:17 lib
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+-rwxrwx---  1 taz23vul TSL_20       2076 Jul  9 09:20 slurm-13611796.out
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20        128 Jul  9 09:16 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION
 ```
 
 All the files we expected to be created have been and are sitting nicely in the directory. Hurray!
@@ -191,38 +307,57 @@ So far this has all been very much like a bash script. The `snakemake` file seem
 Let's look at the dry-run output from the pipeline we just ran.
 
 ```
-$ snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+$ ./src/run_workflow.py --dry-run
+Running command: sbatch --partition tsl-long --wckey wckey -J snakemake_9.3 --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
+Submitted batch job 13331525
+```
+If we examine our slurm-XXXXXX.out then we will obtain the following:
+
+```
+nano slurm-13331525.out
+
+Using workflow specific profile ./profiles for setting default command line arguments.
+host: t384n8
 Building DAG of jobs...
 Nothing to be done (all requested files are present and up to date).
+
 ```
 
 Well, that's reassuring. Nothing need be done. What if a component file changed. Lets look at what happens if an input file is updated. Using `touch` to update the timestamp on the reference file
 
 ```
-$ sample_data touch ecoli_genome.fa
-$ sample_data ls -l
-total 119480
--rw-r--r--  1 macleand  2006   9397482 28 Oct 10:13 aln.bam
--rw-r--r--  1 macleand  2006   7929255 28 Oct 10:13 aln.sorted.bam
--rw-r--r--@ 1 macleand  2006   5205449 28 Oct 10:32 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Nov  2019 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       420 26 Oct 16:50 my_pipeline.snakefile
+$ touch ecoli_genome.fa
+$ ls -l
+
+-rwxrwx---  1 taz23vul TSL_20    9397509 Jul  9 09:18 aln.bam
+-rwxrwx---  1 taz23vul TSL_20    7929252 Jul  9 09:19 aln.sorted.bam
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:21 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  9 09:17 lib
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+-rwxrwx---  1 taz23vul TSL_20       2076 Jul  9 09:20 slurm-13611796.out
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20        128 Jul  9 09:16 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION
 ```
 
 One of the source files is now newer than the outputs. What does `snakemake` now think needs to be done
 
 ```
-$ snakemake final_alignments --snakefile my_pipeline.snakefile -c1 -n
+$ ./src/run_workflow.py --dry-run
 
 Building DAG of jobs...
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           1              1              1
-final_alignments        1              1              1
-sort                    1              1              1
-total                   3              1              1
+job                 count 
+----------------  ------- 
+align_and_bam           1  
+final_alignments        1 
+sort                    1 
+total                   3 
 ```
 
 it thinks that the whole pipeline needs to be redone! This is the first awesome thing about `snakemake` - if one of the upstream files is updated (input or output files, it doesn't matter), the relevant parts of the pipeline will be slated to run again (which in this small pipeline will be everything). `snakemake` will work out which bits need doing again automatically from the rule descriptions. In large pipelines this is a major time saver and increases reproducibility massively. Bash scripts must be manually managed which leads to more manual errors.
@@ -235,7 +370,7 @@ I find it really hard to overstate how useful this ability to pick-up-from-where
 
 ## The second awesome thing about `snakemake`
 
-The next life improving thing about `snakemake` is how it handles files. Up to now we've hardcoded the file names into the rules. Thats not scalable. `snakemake` provides a clever pattern match facility between the input and output files to match them up between the rules, it cross-references these with actual filenames and fills in the patterns. It provides access to them using special objects called `wildcards`, `input` and `output`. All we need to do is specify the patterns in our rules and the inputs to the master rule (ie `final_alignments`). In essence, we start by describing the files we want to get out of the pipeline and `snakemake` works back from there according to our pattern. 
+The next life improving thing about `snakemake` is how it handles files. Up to now we've hardcoded the file names into the rules. That's not scalable. `snakemake` provides a clever pattern match facility between the input and output files to match them up between the rules, it cross-references these with actual filenames and fills in the patterns. It provides access to them using special objects called `wildcards`, `input` and `output`. All we need to do is specify the patterns in our rules and the inputs to the master rule (ie `final_alignments`). In essence, we start by describing the files we want to get out of the pipeline and `snakemake` works back from there according to our pattern. 
 
 This is massively easier to see in the rules themselves. Here's our original set of rules. 
 
@@ -293,31 +428,39 @@ Things to note:
   3. The special `{input}` and `{output}` objects can have more than one attribute, so we can have more than one input or output file into a rule.
   4. We can thread the replacements into the `shell` commands to make them generic across samples too.
   
-So we can hopefully see how the rules link up to each other. 
+So we can hopefully see how the rules link up to each other.
 
-What does the dry-run say in the following folder with multiple samples in there?
+To fully understand and test this, we need to copy over additional files for our `snakemake` workflow to handle.  From our sample data, copy the .fq and .fa from the `pputida_sample` directory.
+
+Once these files are copied over to the project directory, what does the dry-run say?
 
 ```
 $ ls -l
-total 170264
--rw-r--r--@ 1 macleand  2006   5205449 28 Oct 11:04 ecoli_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 ecoli_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 ecoli_right_R2.fq
--rw-r--r--  1 macleand  2006       479 28 Oct 11:28 multi.snakefile
--rw-r--r--@ 1 macleand  2006   5205449 28 Oct 11:04 pputida_genome.fa
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 pputida_left_R1.fq
--rw-r--r--@ 1 macleand  2006  19186649 28 Oct 11:04 pputida_right_R2.fq
+total 1403832
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:21 ecoli_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:13 ecoli_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         92 Jul  9 09:17 lib
+-rwxrwxr--  1 taz23vul TSL_20    5205449 Jul  9 09:37 pputida_genome.fa
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:37 pputida_left_R1.fq
+-rwxrwxr--  1 taz23vul TSL_20   19186649 Jul  9 09:37 pputida_right_R2.fq
+drwxrwx---  2 taz23vul TSL_20         33 Jul  2 10:07 profiles
+-rwxrwx---  1 taz23vul TSL_20       5398 Jul  2 10:21 README.md
+drwxrwx--- 17 taz23vul TSL_20        390 Jul  2 10:19 snakemake_env
+drwxrwx---  2 taz23vul TSL_20        128 Jul  9 09:37 src
+drwxrwx---  2 taz23vul TSL_20         31 Jul  9 09:13 test
+-rwxrwx---  1 taz23vul TSL_20 1106165760 Jul  2 09:49 tools.sif
+-rwxrwx---  1 taz23vul TSL_20        484 Jul  2 10:20 VERSION
 
 
-
-$ snakemake final_alignments --snakefile multi.snakefile -c1 -n
+$ ./src/run_workflow.py --dry-run
 Job stats:
-job                 count    min threads    max threads
-----------------  -------  -------------  -------------
-align_and_bam           2              1              1
-final_alignments        1              1              1
-sort                    2              1              1
-total                   5              1              1
+job                 count
+----------------  -------  
+align_and_bam           2 
+final_alignments        1  
+sort                    2  
+total                   5  
 
 Reasons:
     (check individual jobs above for details)
