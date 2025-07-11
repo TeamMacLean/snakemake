@@ -142,7 +142,7 @@ To generate the snakefile for this tutorial, modify the file `./src/workflow.smk
 
 ### The dry-run
 
-Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run. Put together that makes something like
+Usually we don't want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake `-n` flag creates a dry-run.
 
 Usually, to use the modern version of snakemake we'd need to activate the Mamba environment (which you created during the setup described on the previous page).  This can be achieved by typing:
 
@@ -159,7 +159,7 @@ Helpfully this is achieved for us when using `run_workflow.py`.  Therefore, you 
 This will produce the following output:
 
 ```
-Running command: sbatch --partition tsl-long --wckey wckey -J workingdir --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
+Running command: sbatch --partition tsl-long --wckey wckey -J workingdir --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile ./profiles --executor slurm -n "
 Submitted batch job 13329947
 
 ```

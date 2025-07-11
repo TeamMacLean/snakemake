@@ -319,7 +319,7 @@ samtools sort aln.bam -o aln.sorted.bam</code></pre>
 <p>To generate the snakefile for this tutorial, modify the file <code>./src/workflow.smk</code> removing everything below <strong>line 18</strong> e.g.&nbsp;from the line above “# Define parameters via a config file if needed”. Once you have removed those lines you can add in the snakemake rules defined above.</p>
 <section id="the-dry-run" class="level3" data-number="1.4.1">
 <h3 data-number="1.4.1" class="anchored" data-anchor-id="the-dry-run"><span class="header-section-number">1.4.1</span> The dry-run</h3>
-<p>Usually we don’t want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake <code>-n</code> flag creates a dry-run. Put together that makes something like</p>
+<p>Usually we don’t want to run the pipeline without doing some sort of checking first. This is the purpose of the dry run feature. This allows us to see the jobs that the file specifies, without actually doing them, the snakemake <code>-n</code> flag creates a dry-run.</p>
 <p>Usually, to use the modern version of snakemake we’d need to activate the Mamba environment (which you created during the setup described on the previous page). This can be achieved by typing:</p>
 <pre><code>source activate /path/to/snakemake_environment
 </code></pre>
@@ -327,7 +327,7 @@ samtools sort aln.bam -o aln.sorted.bam</code></pre>
 <pre><code>./src/run_workflow.py --dry-run
 </code></pre>
 <p>This will produce the following output:</p>
-<pre><code>Running command: sbatch --partition tsl-long --wckey wckey -J workingdir --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile profiles --executor slurm -n "
+<pre><code>Running command: sbatch --partition tsl-long --wckey wckey -J workingdir --wrap=" source activate ./snakemake_env ; snakemake -s src/workflow.smk --configfile lib/config.yaml --workflow-profile ./profiles --executor slurm -n "
 Submitted batch job 13329947
 </code></pre>
 <p>We get a lot of output, which can be found within the slurm-XXXXXX.out file, which can be viewed using your screen-based text editor of choice e.g.&nbsp;<code>nano</code>, <code>vim</code> etc.</p>
